@@ -1,0 +1,27 @@
+Here is a suggestion for the directory structure for this repository
+
+engine/
+    storage/
+        common/
+            bbHandle.h
+            bbTypes.h
+
+        segmented/
+            bbSegmentedPool.h
+            bbSegmentedPool.c
+            bbSegmentedList.h
+            bbSegmentedList.c
+            bbSegmentedIterator.h
+            bbSegmentedIterator.c
+
+        contiguous/
+            bbContiguousPool.h
+            bbContiguousPool.c
+            bbContiguousList.h
+            bbContiguousList.c
+
+    core/
+    ecs/
+    network/
+    graphics/
+    gui/
