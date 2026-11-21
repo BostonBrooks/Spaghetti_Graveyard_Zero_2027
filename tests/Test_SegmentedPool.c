@@ -271,6 +271,160 @@ static void test_segment_growth(void) {
 
 }
 
+static void test_segment_lookup(void) {
+    bbSegmentedPool* pool = NULL;
+
+    bbAssert(
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+            == bbSuccess && pool != NULL,
+        "Pool creation failed\n"
+    );
+
+    bbHandle handles[36];
+    test_struct* objects[36];
+
+    for (I32 i = 0; i < 36; i++) {
+        bbAssert(
+        bbSegmentedPool_alloc(pool, &handles[i], (void**)&objects[i]) == bbSuccess,
+        "Allocation failed\n");
+        (objects[i])->integer = 1000+i;
+    }
+
+    for (I32 i = 0; i < 36; i++) {
+        test_struct* object;
+        bbAssert(bbSegmentedPool_lookup(pool, handles[i], (void**)&object) == bbSuccess,
+            "Lookup failed\n");
+        bbAssert(object->integer == 1000+i,"Incorrect object data\n");
+    }
+
+    bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
+             "Pool deletion failed\n");
+
+    printf("test_segement_lookup passed\n");
+}
+
+static void test_invalid_lookup(void) {
+    bbSegmentedPool* pool = NULL;
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
+
+    bbAssert(
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+            == bbSuccess && pool != NULL,
+        "Pool creation failed\n"
+    );
+
+    bbHandle handles[36];
+    test_struct* objects[36];
+
+    for (I32 i = 0; i < 36; i++) {
+        bbAssert(
+        bbSegmentedPool_alloc(pool, &handles[i], (void**)&objects[i]) == bbSuccess,
+        "Allocation failed\n");
+        (objects[i])->integer = 1000+i;
+    }
+
+    test_struct* object;
+
+    bbHandle wrong_generation = handles[7];
+    wrong_generation.system.generation++;
+    bbFlag flag = bbSegmentedPool_lookup(pool, wrong_generation, (void**)&object);
+    bbAssert(flag == bbWrongGeneration, "Expected bbWrongGeneration\n");
+    bbAssert(object == NULL, "Expected to return NULL\n");
+
+    bbHandle wrong_system = handles[14];
+    wrong_system.system.system++;
+    flag = bbSegmentedPool_lookup(pool, wrong_system, (void**)&object);
+    bbAssert(flag == bbWrongSystem, "Expected bbWrongSystem\n");
+    bbAssert(object == NULL, "Expected to return NULL\n");
+
+    bbHandle use_after_free = handles[17];
+    flag = bbSegmentedPool_free(pool, use_after_free);
+    bbAssert(flag == bbSuccess, "bbSegmentedPool_free failed\n");
+    flag = bbSegmentedPool_lookup(pool, use_after_free, (void**)&object);
+
+
+    bbAssert(flag == bbWrongGeneration, "lookup after free returns bbWrongGeneration?\n");
+    bbAssert(object == NULL, "Expected to return NULL\n");
+
+
+    bbHandle out_of_bounds = handles[21];
+    out_of_bounds.system.index = 1000;
+    flag = bbSegmentedPool_lookup(pool, out_of_bounds, (void**)&object);
+    bbAssert(flag == bbOutOfBounds, "Should return bbOutOfBounds\n");
+    bbAssert(object == NULL, "Expected to return NULL\n");
+
+    bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
+             "Pool deletion failed\n");
+    bbWarningsAreFatal = warnings_were_fatal;
+    printf("test_invalid_lookup passed\n");
+}
+
+
+static void test_stress(void) {
+    bbSegmentedPool* pool = NULL;
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
+
+    bbAssert(
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+            == bbSuccess && pool != NULL,
+        "Pool creation failed\n"
+    );
+
+    bbHandle handles[10000];
+    test_struct* objects[10000];
+
+    for (I32 i = 0; i < 10000; i++) {
+        bbAssert(
+        bbSegmentedPool_alloc(pool, &handles[i], (void**)&objects[i]) == bbSuccess,
+        "Allocation failed\n");
+        (objects[i])->integer = i;
+    }
+
+    U32 original_segment_count = pool->segment_count;
+    test_struct* object;
+
+    for (I32 i = 0; i < 10000; i++) {
+        bbAssert(
+        bbSegmentedPool_lookup(pool,handles[i],(void**)&object) == bbSuccess,
+        "Lookup failed\n");
+
+        bbAssert(object == objects[i], "lookup returned wrong address\n");
+        bbAssert(object->integer == i, "lookup returned object with wrong data\n");
+    }
+    for (I32 i = 0; i < 10000; i+=2) {
+        bbFlag flag = bbSegmentedPool_free(pool,handles[i]);
+        bbAssert(flag == bbSuccess, "Free failed\n");
+    }
+
+    bbAssert(original_segment_count == pool->segment_count,
+        "Unexpected increase in segment count\n");
+
+    for (I32 i = 0; i < 10000; i+=2) {
+        bbAssert(
+        bbSegmentedPool_alloc(pool, &handles[i], (void**)&objects[i]) == bbSuccess,
+        "Allocation failed\n");
+        (objects[i])->integer = i;
+    }
+    for (I32 i = 0; i < 10000; i++) {
+        bbAssert(
+        bbSegmentedPool_lookup(pool,handles[i],(void**)&object) == bbSuccess,
+        "Lookup failed\n");
+
+        bbAssert(object == objects[i], "lookup returned wrong address\n");
+        bbAssert(object->integer == i, "lookup returned object with wrong data\n");
+    }
+
+    bbAssert(pool->first_available_segment == BB_POOL_END_OF_LIST,
+        "Available segment listshould be empty\n");
+
+    bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
+             "Pool deletion failed\n");
+    bbWarningsAreFatal = warnings_were_fatal;
+    printf("test_stress passed\n");
+}
+
 int main(void) {
 
     test_allocation();
@@ -279,7 +433,9 @@ int main(void) {
     test_segment_growth();
     // Enable only when double-free warnings are nonfatal.
     // test_double_free();
-
+    test_segment_lookup();
+    test_invalid_lookup();
+    test_stress();
     printf("All enabled segmented pool tests passed!\n");
 
     return 0;

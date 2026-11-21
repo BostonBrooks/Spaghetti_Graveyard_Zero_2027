@@ -483,3 +483,59 @@ bbFlag bbSegmentedPool_delete(bbSegmentedPool** pool) {
     *pool = NULL;
     return bbSuccess;
 }
+
+bbFlag bbSegmentedPool_lookup(bbSegmentedPool* pool,
+    bbHandle handle,
+    void** out_data) {
+
+
+    bbAssert(pool != NULL, "Null pool pointer\n");
+    bbAssert(out_data != NULL, "Null output pointer\n");
+
+    *out_data = NULL;
+
+    if (handle.system.generation == BB_POOL_NULL_GENERATION) {
+        return bbNull;
+    }
+
+    U32 segment_index = handle.system.index / pool->elements_per_segment;
+    U32 local_index = handle.system.index % pool->elements_per_segment;
+
+    if (segment_index >= pool->segment_count) {
+        bbWarning(0==1, "Segment index out of bounds\n");
+        return bbOutOfBounds;
+    }
+
+
+    bbSegmentedPool_segment* segment = pool->segments[segment_index];
+    bbSegmentedPool_header* header = bbSegmentedPool_getHeader(pool,segment,local_index);
+
+    if (header->self.system.system != handle.system.system) {
+        bbWarning(0==1, "Trying to lookup handle from wrong system\n");
+        return bbWrongSystem;
+    }
+
+
+    if (header->self.system.generation != handle.system.generation) {
+        //bbWarning(0==1, "Wrong generation in pool free\n");
+        //returning bbWrongGeneration may be intended behaviour
+        return bbWrongGeneration;
+    }
+
+    if (header->next_free != BB_POOL_IN_USE) {
+        bbWarning(0==1, "Trying to look up an element not allocated\n");
+        return bbNotAllocated;
+    }
+
+
+
+
+    size_t header_offset = bbSegmentedPool_headerOffset(pool->alignment);
+
+
+    U8* data = ((U8*)header) + header_offset;
+
+    *out_data = data;
+
+    return bbSuccess;
+}

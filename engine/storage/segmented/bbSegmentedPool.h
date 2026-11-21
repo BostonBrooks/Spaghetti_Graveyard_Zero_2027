@@ -35,6 +35,10 @@ bbFlag bbSegmentedPool_free(
     bbHandle handle
 );
 
+bbFlag bbSegmentedPool_lookup(bbSegmentedPool* pool,
+    bbHandle handle,
+    void** out_data);
+
 bbFlag bbSegmentedPool_delete(bbSegmentedPool** pool);
 
 #endif //BB_SEGMENTED_POOL_H

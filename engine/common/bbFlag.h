@@ -14,6 +14,7 @@ typedef enum {
     bbOutOfBounds, // Segment index exceeds the allocated segments
     bbNull, // Handle has the reserved null generation
     bbDoubleFree, // Freeing object not in use
+    bbNotAllocated,
 
 } bbFlag;
 

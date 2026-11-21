@@ -7,14 +7,10 @@
 #include <stdio.h>
 #include <threads.h>
 
-#ifdef NDEBUG
-    #define BB_WARNINGS_ARE_FATAL 0
-#else
-    #define BB_WARNINGS_ARE_FATAL 1
-#endif
 
-extern thread_local bool debug_off;
-extern thread_local char* thread;
+extern _Thread_local bool bbWarningsAreFatal;
+extern _Thread_local  bool debug_off;
+extern _Thread_local  char* thread;
 
 #ifdef _WIN32
 
@@ -53,7 +49,7 @@ fprintf (stderr, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s"\
 fprintf(stderr, __VA_ARGS__);\
 fflush(stderr);\
 bbUnlockStderr();\
-if (BB_WARNINGS_ARE_FATAL) {\
+if (bbWarningsAreFatal) {\
 abort();\
 }\
 }\
