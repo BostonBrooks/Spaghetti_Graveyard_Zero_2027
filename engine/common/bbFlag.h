@@ -8,6 +8,7 @@
 typedef enum {
     bbSuccess, //Generic pass
     bbFail, //Generic fail
+    bbFull, //Pool full
 
 } bbFlag;
 

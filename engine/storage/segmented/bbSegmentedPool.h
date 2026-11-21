@@ -24,4 +24,10 @@ bbFlag bbSegmentedPool_new(
     U32 elements_per_segment,
     U16 system);
 
+bbFlag bbSegmentedPool_alloc(
+    bbSegmentedPool* pool,
+    bbHandle* out_handle,
+    void** out_data
+);
+
 #endif //BB_SEGMENTED_POOL_H
