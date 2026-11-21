@@ -30,4 +30,11 @@ bbFlag bbSegmentedPool_alloc(
     void** out_data
 );
 
+bbFlag bbSegmentedPool_free(
+    bbSegmentedPool* pool,
+    bbHandle handle
+);
+
+bbFlag bbSegmentedPool_delete(bbSegmentedPool** pool);
+
 #endif //BB_SEGMENTED_POOL_H

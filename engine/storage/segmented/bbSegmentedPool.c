@@ -12,43 +12,7 @@
 #include <stdlib.h>
 
 #include "engine/common/bbTerminal.h"
-
-#define BB_POOL_IN_USE UINT32_MAX
-#define BB_POOL_END_OF_LIST (UINT32_MAX-1)
-#define BB_POOL_NULL_GENERATION 0
-#define BB_POOL_INITIAL_GENERATION 1
-
-typedef struct
-{
-    bbHandle self;
-    U32 next_free;
-    U8 data[];
-} bbSegmentedPool_header;
-
-
-typedef struct {
-    U32 first_free;
-    U32 free_count;
-
-    U32 next_available;
-    U32 prev_available;
-
-    U8 data[];
-} bbSegmentedPool_segment;
-
-
-struct bbSegmentedPool{
-    bbSegmentedPool_segment** segments;
-    size_t element_size;
-    size_t element_stride;
-    size_t segment_size;
-    size_t alignment;
-    U32 first_available_segment;
-    U32 elements_per_segment;
-    U32 segment_count;
-    U32 segment_capacity;
-    U16 system;
-};
+#include "engine/storage/segmented/bbSegmentedPool_internal.h"
 
 
 /**
@@ -77,8 +41,30 @@ bbSegmentedPool_segmentOffset(size_t alignment)
     return (offset + alignment - 1) & ~(alignment - 1);
 }
 
+
+/**
+ * @brief Returns the header associated with an object in a pool
+ *
+ */
 static inline bbSegmentedPool_header*
-bbSegmentedPool_getSegmentHeader(
+    bbSegmentedPool_getObjectHeader(
+        const bbSegmentedPool* pool,
+        const void* object) {
+    size_t offset = bbSegmentedPool_headerOffset(pool->alignment);
+
+    bbSegmentedPool_header* header = (bbSegmentedPool_header*)((const U8*)object - offset);
+
+    bbAssert(
+        header->self.system.system == pool->system,
+        "Object belongs to a different system\n"
+    );
+
+
+}
+
+
+static inline bbSegmentedPool_header*
+bbSegmentedPool_getHeader(
     const bbSegmentedPool* pool,
     bbSegmentedPool_segment* segment,
     U32 local_index) {
@@ -295,7 +281,7 @@ bbFlag bbSegmentedPool_newSegment(bbSegmentedPool* pool) {
 
     bbSegmentedPool_header* header;
     for (U32 i = 0; i < elements_per_segment; i++) {
-        header = bbSegmentedPool_getSegmentHeader(pool,segment,i);
+        header = bbSegmentedPool_getHeader(pool,segment,i);
         header->next_free = i+1;
         header->self.system.index = current_segment * elements_per_segment + i;
         header->self.system.system = pool->system;
@@ -362,7 +348,7 @@ bbFlag bbSegmentedPool_alloc(
     U32 first_free = segment->first_free;
     bbAssert(first_free < pool->elements_per_segment,
         "Invalid free-list head\n");
-    bbSegmentedPool_header* header = bbSegmentedPool_getSegmentHeader(pool,segment,first_free);
+    bbSegmentedPool_header* header = bbSegmentedPool_getHeader(pool,segment,first_free);
 
     U32 next_free = header->next_free;
 
@@ -396,5 +382,104 @@ bbFlag bbSegmentedPool_alloc(
     if (out_handle != NULL) *out_handle = header->self;
     if (out_data != NULL) *out_data = data;
 
+    return bbSuccess;
+}
+
+bbFlag bbSegmentedPool_free(
+    bbSegmentedPool* pool,
+    bbHandle handle
+) {
+    bbAssert(pool != NULL, "Null pool pointer\n");
+
+    // if (handle.system.generation != BB_POOL_NULL_GENERATION) {
+    //     return bbNull;
+    // }
+
+    if (handle.system.system != pool->system) {
+        return bbWrongSystem;
+    }
+
+    U32 index = handle.system.index;
+    U32 elements_per_segment = pool->elements_per_segment;
+    U32 segment_index = index / elements_per_segment;
+    U32 local_index = index % elements_per_segment;
+
+    if (segment_index >= pool->segment_count) {
+        bbWarning(0==1, "Segment index out of bounds\n");
+        return bbOutOfBounds;
+    }
+
+
+    bbSegmentedPool_segment* segment = pool->segments[segment_index];
+    bbSegmentedPool_header* header = bbSegmentedPool_getHeader(pool,segment,local_index);
+
+
+    if (header->next_free != BB_POOL_IN_USE) {
+        bbWarning(0==1, "Double free in pool\n");
+        return bbDoubleFree;
+    }
+
+    if (header->self.system.generation != handle.system.generation) {
+        //bbWarning(0==1, "Wrong generation in pool free\n");
+        //returning bbWrongGeneration may be intended behaviour
+        return bbWrongGeneration;
+    }
+
+
+    header->self.system.generation++;
+    if (header->self.system.generation == BB_POOL_NULL_GENERATION) {
+        header->self.system.generation++;
+    }
+
+    bool was_full = (segment->free_count == 0);
+
+    header->next_free = segment->first_free;
+    segment->first_free = local_index;
+    segment->free_count++;
+
+    if (was_full) {
+
+        bbAssert(
+            segment->next_available == BB_POOL_END_OF_LIST &&
+            segment->prev_available == BB_POOL_END_OF_LIST,
+            "Full segment unexpectedly linked\n");
+        //add segment to list
+        U32 old_head = pool->first_available_segment;
+
+        segment->prev_available = BB_POOL_END_OF_LIST;
+        segment->next_available = old_head;
+
+        if (old_head != BB_POOL_END_OF_LIST) {
+            pool->segments[old_head]->prev_available = segment_index;
+        }
+
+        pool->first_available_segment = segment_index;
+    }
+
+    return bbSuccess;
+}
+
+
+bbFlag bbSegmentedPool_freeObject(
+    bbSegmentedPool* pool,
+    void* object
+) {
+    bbAssert(pool != NULL, "Null pool pointer\n");
+    if (object == NULL) return bbNull;
+    bbSegmentedPool_header* header = bbSegmentedPool_getObjectHeader(pool,object);
+    return bbSegmentedPool_free(pool,header->self);
+}
+
+
+bbFlag bbSegmentedPool_delete(bbSegmentedPool** pool) {
+
+    bbAssert(pool != NULL && *pool != NULL, "Trying to delete null pool\n");
+
+    for (U32 i = 0; i < (*pool)->segment_count; i++) {
+        free((*pool)->segments[i]);
+    }
+    free((*pool)->segments);
+    free(*pool);
+    *pool = NULL;
     return bbSuccess;
 }
