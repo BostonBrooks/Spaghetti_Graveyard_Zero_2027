@@ -7,6 +7,7 @@
 
 #define isNULL(A) ((A).system.generation == BB_POOL_NULL_GENERATION)
 
+
 bbFlag bbSegmentedList_init(
     bbSegmentedList* list,
     bbSegmentedPool* pool,
@@ -75,8 +76,8 @@ bbFlag bbSegmentedList_pushR(bbSegmentedList* list, void* element) {
         tail_link->next = handle;
         head_link->prev = handle;
 
-        link->next = header->tail;
-        link->prev = header->head;
+        link->prev = header->tail;
+        link->next = header->head;
 
         header->tail = handle;
 
@@ -126,8 +127,8 @@ bbFlag bbSegmentedList_pushL(bbSegmentedList* list, void* element) {
         tail_link->next = handle;
         head_link->prev = handle;
 
-        link->next = header->tail;
-        link->prev = header->head;
+        link->next = header->head;
+        link->prev = header->tail;
 
         header->head = handle;
 
@@ -253,6 +254,74 @@ bbFlag bbSegmentedList_popR(bbSegmentedList* list, void** element) {
     tail_link->next = (bbHandle){0};
 
     *element = tail_object;
+
+    return bbSuccess;
+}
+
+
+bbFlag bbSegmentedList_remove(bbSegmentedList* list, void* element) {
+    bbAssert(list != NULL, "Passing null list\n");
+    bbAssert(element != NULL, "Passing null element\n");
+
+    bbList_header* header = list->list_pointer;
+
+    if (isNULL(header->head) || isNULL(header->tail)) {
+        bbWarning(0==1, "Removing element from empty list\n");
+        return bbNull;
+    }
+
+    bbList_element* link = (bbList_element*)((U8*)element+list->offset_of);
+
+    bbAssert(link->list_id == header->list_id,
+        "link->list_id = %d, header->list_id = %d\n", link->list_id, header->list_id);
+
+    bbHandle element_handle;
+    bbFlag flag = bbSegmentedPool_reverseLookup(list->pool, element, &element_handle);
+    if (flag != bbSuccess) return flag;
+
+    if (bbHandle_equal(header->head, header->tail)) {
+
+        bbAssert(bbHandle_equal(header->head, element_handle), "element/list head mismatch\n");
+
+        header->head = (bbHandle){0};
+        header->tail = (bbHandle){0};
+
+    } else {
+        void* prev_object;
+        void* next_object;
+        bbList_element* prev_link;
+        bbList_element* next_link;
+
+
+        flag = bbSegmentedPool_lookup(list->pool, link->prev, &prev_object);
+        if (flag != bbSuccess) return flag;
+
+        flag = bbSegmentedPool_lookup(list->pool, link->next, &next_object);
+        if (flag != bbSuccess) return flag;
+
+        prev_link = (bbList_element*)((U8*)prev_object+list->offset_of);
+        next_link = (bbList_element*)((U8*)next_object+list->offset_of);
+
+        bbAssert(
+            bbHandle_equal(prev_link->next, element_handle),
+            "Previous element does not point to removed element\n");
+
+        bbAssert(
+            bbHandle_equal(next_link->prev, element_handle),
+            "Next element does not point to removed element\n");
+
+        prev_link->next = link->next;
+        next_link->prev = link->prev;
+
+        if (bbHandle_equal(element_handle, header->head))
+            header->head = link->next;
+
+        if (bbHandle_equal(element_handle, header->tail))
+            header->tail = link->prev;
+    }
+    link->list_id = 0;
+    link->prev = (bbHandle){0};
+    link->next = (bbHandle){0};
 
     return bbSuccess;
 }

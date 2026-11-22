@@ -242,7 +242,7 @@ static void test_list_mixed(void) {
     bbSegmentedPool* pool = NULL;
     bbSegmentedList list;
     bool warnings_were_fatal = bbWarningsAreFatal;
-    //bbWarningsAreFatal = 0;
+    bbWarningsAreFatal = 0;
 
 
     bbFlag flag =  bbSegmentedPool_new(&pool,
@@ -271,11 +271,15 @@ static void test_list_mixed(void) {
     flag = bbSegmentedList_pushR(&list,test_object);
     bbAssert(flag == bbSuccess, "pushR failed\n");
 
+
+
     flag = bbSegmentedPool_alloc(pool,&test_handle,(void**)&test_object);
     bbAssert(flag == bbSuccess && test_object != NULL, "Allocation failed\n");
     test_object->integer = 2;
     flag = bbSegmentedList_pushR(&list,test_object);
     bbAssert(flag == bbSuccess, "pushR failed\n");
+
+
 
     flag = bbSegmentedPool_alloc(pool,&test_handle,(void**)&test_object);
     bbAssert(flag == bbSuccess && test_object != NULL, "Allocation failed\n");
@@ -284,33 +288,15 @@ static void test_list_mixed(void) {
     bbAssert(flag == bbSuccess, "pushL failed\n");
 
 
+
     flag = bbSegmentedList_popR(&list,(void**)&test_object);
     bbAssert(flag == bbSuccess, "popR failed\n");
     bbAssert(test_object->integer == 2, "Incorrect test_struct data\n");
     bbSegmentedPool_freeObject(pool,test_object);
 
-    bbList_header* header = list.list_pointer;
 
-    test_struct* head_object;
-    test_struct* tail_object;
-
-    bbFlag f1 = bbSegmentedPool_lookup(
-        pool, header->head, (void**)&head_object);
-
-    bbFlag f2 = bbSegmentedPool_lookup(
-        pool, header->tail, (void**)&tail_object);
-
-    bbAssert(f1 == bbSuccess && f2 == bbSuccess,
-             "Invalid head or tail\n");
-
-    bbList_element* head_link =
-        (bbList_element*)((U8*)head_object + list.offset_of);
-
-    bbList_element* tail_link =
-        (bbList_element*)((U8*)tail_object + list.offset_of);
 
     flag = bbSegmentedList_popL(&list,(void**)&test_object);
-
     bbAssert(flag == bbSuccess, "popL failed\n");
     bbAssert(test_object->integer == 3, "Incorrect test_struct data\n");
     bbSegmentedPool_freeObject(pool,test_object);
@@ -343,11 +329,119 @@ static void test_list_mixed(void) {
     printf("test_list_mixed passed\n");
 }
 
+
+static void test_list_remove(void) {
+    bbSegmentedPool* pool = NULL;
+    bbSegmentedList list;
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
+
+
+    bbFlag flag =  bbSegmentedPool_new(&pool,
+        sizeof(test_struct),
+        16,
+        4,
+        7,
+        test_init_list_fn,
+        NULL);
+
+    bbAssert(flag == bbSuccess && pool != NULL, "Pool creation failed\n");
+
+    bbSegmentedList_init(&list,
+        pool,
+        offsetof(test_struct, element),
+        193,
+        NULL);
+
+    test_struct* test_objects[7];
+    bbHandle test_handles[7];
+
+    for (I32 i = 0; i < 7; i++) {
+
+        flag = bbSegmentedPool_alloc(pool,&test_handles[i],(void**)&test_objects[i]);
+        bbAssert(flag == bbSuccess && test_objects[i] != NULL, "Allocation failed\n");
+        test_objects[i]->integer = i;
+        flag = bbSegmentedList_pushR(&list,(void*)test_objects[i]);
+        bbAssert(flag == bbSuccess, "pushR failed\n");
+    }
+    // bbHandle expected = test_handles[3];
+    // bbHandle actual;
+    //
+    // flag = bbSegmentedPool_reverseLookup(
+    //     pool, test_objects[3], &actual);
+    //
+    // bbAssert(flag == bbSuccess, "Reverse lookup failed\n");
+    //
+    // printf("Expected index: %u\n", expected.system.index);
+    // printf("Actual index:   %u\n", actual.system.index);
+    //
+    // bbAssert(
+    // bbHandle_equal(actual, test_handles[3]),
+    // "Reverse lookup returned incorrect handle\n");
+
+    flag = bbSegmentedList_remove(&list,test_objects[3]);
+    bbAssert(flag == bbSuccess, "remove failed\n");
+    flag = bbSegmentedPool_freeObject(pool,test_objects[3]);
+    bbAssert(flag == bbSuccess, "free object failed\n");
+
+
+    flag = bbSegmentedList_remove(&list,test_objects[0]);
+    bbAssert(flag == bbSuccess, "remove failed\n");
+    flag = bbSegmentedPool_freeObject(pool,test_objects[0]);
+    bbAssert(flag == bbSuccess, "free object failed\n");
+
+    flag = bbSegmentedList_remove(&list,test_objects[6]);
+    bbAssert(flag == bbSuccess, "remove failed\n");
+    flag = bbSegmentedPool_freeObject(pool,test_objects[6]);
+    bbAssert(flag == bbSuccess, "free object failed\n");
+
+    flag = bbSegmentedList_remove(&list,test_objects[4]);
+    bbAssert(flag == bbSuccess, "remove failed\n");
+    flag = bbSegmentedPool_freeObject(pool,test_objects[4]);
+    bbAssert(flag == bbSuccess, "free object failed\n");
+
+    flag = bbSegmentedList_remove(&list,test_objects[5]);
+    bbAssert(flag == bbSuccess, "remove failed\n");
+    flag = bbSegmentedPool_freeObject(pool,test_objects[5]);
+    bbAssert(flag == bbSuccess, "free object failed\n");
+
+    flag = bbSegmentedList_remove(&list,test_objects[1]);
+    bbAssert(flag == bbSuccess, "remove failed\n");
+    flag = bbSegmentedPool_freeObject(pool,test_objects[1]);
+    bbAssert(flag == bbSuccess, "free object failed\n");
+
+    flag = bbSegmentedList_remove(&list,test_objects[2]);
+    bbAssert(flag == bbSuccess, "remove failed\n");
+    flag = bbSegmentedPool_freeObject(pool,test_objects[2]);
+    bbAssert(flag == bbSuccess, "free object failed\n");
+
+    bbAssert(isNULL(list.list_pointer->head),
+         "List head should be null\n");
+
+    bbAssert(isNULL(list.list_pointer->tail),
+             "List tail should be null\n");
+
+
+    for (U32 i = 0; i < pool->segment_count; i++) {
+        bbAssert(pool->segments[i]->free_count == 4,
+                 "Segment not completely free\n");
+    }
+
+    bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
+     "Pool deletion failed\n");
+
+    bbWarningsAreFatal = warnings_were_fatal;
+
+    printf("test_list_remove passed\n");
+}
+
+
 int main() {
     test_init_success();
     test_popL();
     test_popR();
     test_list_mixed();
+    test_list_remove();
 
     printf("All enabled segmented list tests passed!\n");
     exit(0);

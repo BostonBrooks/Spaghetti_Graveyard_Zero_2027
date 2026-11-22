@@ -1,5 +1,7 @@
 #ifndef BB_SEGMENTED_POOL_H
 #define BB_SEGMENTED_POOL_H
+#include <stdbool.h>
+
 #include "engine/common/bbFlag.h"
 
 
@@ -7,6 +9,12 @@ typedef struct bbSegmentedPool bbSegmentedPool;
 
 typedef bbFlag bbSegmentedPool_initFn(bbSegmentedPool* pool, void* object, void* cl);
 
+
+static inline bool bbHandle_equal(bbHandle a, bbHandle b) {
+    return a.system.index == b.system.index &&
+           a.system.generation == b.system.generation &&
+           a.system.system == b.system.system;
+}
 
 /**
  * @brief Creates an empty segmented memory pool.
