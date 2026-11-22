@@ -420,7 +420,7 @@ static void test_stress(void) {
     }
 
     bbAssert(pool->first_available_segment == BB_POOL_END_OF_LIST,
-        "Available segment listshould be empty\n");
+        "Available segment list should be empty\n");
 
     bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
              "Pool deletion failed\n");

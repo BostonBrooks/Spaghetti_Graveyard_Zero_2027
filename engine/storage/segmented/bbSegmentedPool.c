@@ -59,6 +59,7 @@ static inline bbSegmentedPool_header*
         "Object belongs to a different system\n"
     );
 
+    return header;
 
 }
 

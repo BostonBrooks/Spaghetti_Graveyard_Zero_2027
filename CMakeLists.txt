@@ -11,6 +11,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 # Engine library
 add_library(bbEngine STATIC
         engine/storage/segmented/bbSegmentedPool.c
+        engine/storage/segmented/bbSegmentedList.c
         engine/common/bbTerminal.c
 )
 
@@ -57,5 +58,26 @@ target_compile_options(Segmented_Pool PRIVATE
 )
 
 target_link_options(Segmented_Pool PRIVATE
+        -fsanitize=address,undefined
+)
+
+add_executable(Segmented_List
+        tests/Test_SegmentedList.c
+)
+
+target_compile_definitions(Segmented_List PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Segmented_List PRIVATE
+        bbEngine
+)
+
+target_compile_options(Segmented_List PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+)
+
+target_link_options(Segmented_List PRIVATE
         -fsanitize=address,undefined
 )

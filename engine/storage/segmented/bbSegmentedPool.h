@@ -44,6 +44,13 @@ bbFlag bbSegmentedPool_free(
     bbHandle handle
 );
 
+
+
+bbFlag bbSegmentedPool_freeObject(
+    bbSegmentedPool* pool,
+    void* object
+);
+
 bbFlag bbSegmentedPool_lookup(bbSegmentedPool* pool,
     bbHandle handle,
     void** out_data);
