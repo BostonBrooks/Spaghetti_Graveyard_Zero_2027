@@ -87,18 +87,22 @@ bbFlag bbSegmentedPool_new(
     size_t element_size,
     size_t alignment,
     U32 elements_per_segment,
-    U16 system)
+    U16 system,
+    bbSegmentedPool_initFn* init_fn,
+    void* init_cl)
 {
+    if (out_pool == NULL)
+        return bbFail;
+
+    *out_pool = NULL;
+
     bbWarning(elements_per_segment < BB_POOL_END_OF_LIST, "elements_per_segment too large\n");
     if (elements_per_segment >= BB_POOL_END_OF_LIST) return bbFail;
 
     bbWarning(elements_per_segment > 0, "Zero elements per segment\n");
     if (elements_per_segment == 0) return bbFail;
 
-    if (out_pool == NULL)
-        return bbFail;
 
-    *out_pool = NULL;
 
     if (element_size == 0 ||
         elements_per_segment == 0 ||
@@ -147,14 +151,17 @@ bbFlag bbSegmentedPool_new(
     (unaligned_stride + alignment - 1)
     & ~(alignment - 1);
 
-    if (element_stride >
-    (SIZE_MAX - segment_offset_test) / elements_per_segment)
-    {
-        return bbFail;
-    }
+
 
     const size_t segment_offset =
         bbSegmentedPool_segmentOffset(alignment);
+
+    if (element_stride >
+(SIZE_MAX - segment_offset) / elements_per_segment)
+    {
+        bbWarning(0==1, "Segment size calculation will overflow\n");
+        return bbFail;
+    }
 
     size_t segment_size =
     segment_offset + element_stride * elements_per_segment;
@@ -176,6 +183,8 @@ bbFlag bbSegmentedPool_new(
     pool->first_available_segment = BB_POOL_END_OF_LIST;
     pool->segment_count = 0;
     pool->segment_capacity = 0;
+    pool->init_fn = init_fn;
+    pool->init_cl = init_cl;
 
     *out_pool = pool;
 
@@ -322,6 +331,10 @@ bbFlag bbSegmentedPool_alloc(
     bbAssert(out_handle != NULL || out_data != NULL,
         "Allocation requires an output parameter\n");
 
+
+    if (out_handle != NULL) *out_handle = (bbHandle){0};
+    if (out_data != NULL) *out_data = NULL;
+
     U32 segment_index = pool->first_available_segment;
 
     if (segment_index == BB_POOL_END_OF_LIST) {
@@ -378,6 +391,18 @@ bbFlag bbSegmentedPool_alloc(
     size_t header_offset = bbSegmentedPool_headerOffset(pool->alignment);
 
     U8* data = ((U8*)header) + header_offset;
+
+    if (pool->init_fn != NULL) {
+        bbFlag flag = pool->init_fn(pool, data, pool->init_cl);
+
+        if (flag != bbSuccess) {
+            bbFlag rollback = bbSegmentedPool_free(pool, header->self);
+            bbAssert(rollback == bbSuccess,
+                "Failed to roll back object initialisation\n");
+
+            return flag;
+        }
+    }
 
     if (out_handle != NULL) *out_handle = header->self;
     if (out_data != NULL) *out_data = data;
@@ -537,5 +562,28 @@ bbFlag bbSegmentedPool_lookup(bbSegmentedPool* pool,
 
     *out_data = data;
 
+    return bbSuccess;
+}
+
+
+bbFlag bbSegmentedPool_reverseLookup(
+    bbSegmentedPool* pool,
+    void* object,
+    bbHandle* out_handle
+) {
+    bbAssert(pool != NULL, "Null pool pointer\n");
+    bbAssert(out_handle != NULL, "Null handle pointer\n");
+    if (object == NULL) return bbNull;
+    bbSegmentedPool_header* header = bbSegmentedPool_getObjectHeader(pool,object);
+
+    if (header->self.system.system != pool->system) {
+        return bbWrongSystem;
+    }
+
+    if (header->next_free != BB_POOL_IN_USE) {
+        return bbNotAllocated;
+    }
+
+    *out_handle = header->self;
     return bbSuccess;
 }

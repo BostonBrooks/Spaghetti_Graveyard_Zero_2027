@@ -19,7 +19,7 @@ static void test_allocation(void) {
     bbSegmentedPool* pool = NULL;
 
     bbAssert(
-        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, NULL, NULL)
             == bbSuccess && pool != NULL,
         "Pool creation failed\n"
     );
@@ -72,7 +72,7 @@ static void test_stale_handle(void) {
     bbSegmentedPool* pool = NULL;
 
     bbAssert(
-        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, NULL, NULL)
             == bbSuccess && pool != NULL,
         "Pool creation failed\n"
     );
@@ -124,10 +124,12 @@ static void test_stale_handle(void) {
 // Run only when warnings are configured as nonfatal.
 static void test_double_free(void) {
 
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
     bbSegmentedPool* pool = NULL;
 
     bbAssert(
-        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, NULL, NULL)
             == bbSuccess && pool != NULL,
         "Pool creation failed\n"
     );
@@ -153,6 +155,7 @@ static void test_double_free(void) {
     bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
              "Pool deletion failed\n");
 
+    bbWarningsAreFatal = warnings_were_fatal;
     printf("test_double_free passed\n");
 }
 
@@ -163,7 +166,7 @@ static void test_available_segments(void) {
     bbSegmentedPool* pool = NULL;
 
     bbAssert(
-        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, NULL, NULL)
             == bbSuccess && pool != NULL,
         "Pool creation failed\n"
     );
@@ -234,7 +237,7 @@ static void test_segment_growth(void) {
     bbSegmentedPool* pool = NULL;
 
     bbAssert(
-        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, NULL, NULL)
             == bbSuccess && pool != NULL,
         "Pool creation failed\n"
     );
@@ -275,7 +278,7 @@ static void test_segment_lookup(void) {
     bbSegmentedPool* pool = NULL;
 
     bbAssert(
-        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, NULL, NULL)
             == bbSuccess && pool != NULL,
         "Pool creation failed\n"
     );
@@ -309,7 +312,7 @@ static void test_invalid_lookup(void) {
     bbWarningsAreFatal = 0;
 
     bbAssert(
-        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, NULL, NULL)
             == bbSuccess && pool != NULL,
         "Pool creation failed\n"
     );
@@ -367,7 +370,7 @@ static void test_stress(void) {
     bbWarningsAreFatal = 0;
 
     bbAssert(
-        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0)
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, NULL, NULL)
             == bbSuccess && pool != NULL,
         "Pool creation failed\n"
     );
@@ -425,17 +428,114 @@ static void test_stress(void) {
     printf("test_stress passed\n");
 }
 
+static bbFlag test_init_failure_fn(
+    bbSegmentedPool* pool,
+    void* object,
+    void* cl
+) {
+    (void)pool;
+    (void)object;
+    (void)cl;
+
+    return bbFail;
+}
+
+static void test_init_failure(void) {
+
+    bbSegmentedPool* pool = NULL;
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
+
+    bbAssert(
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, test_init_failure_fn, NULL)
+            == bbSuccess && pool != NULL,
+        "Pool creation failed\n"
+    );
+
+    bbHandle handle;
+    test_struct* object;
+
+    for (I32 i = 0; i < 100; i++) {
+        bbFlag flag = bbSegmentedPool_alloc(pool, &handle, (void**)&object);
+
+        bbAssert(flag == bbFail,
+            "Expected callback failure\n");
+        bbAssert(object == NULL,
+            "bbSegmentedPool_alloc returns NULL on failure\n");
+
+        bbAssert(pool->segment_count == 1,
+            "Failed allocation caused segment growth");
+    }
+
+    bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
+             "Pool deletion failed\n");
+    bbWarningsAreFatal = warnings_were_fatal;
+    printf("test_init_failure passed\n");
+}
+
+static bbFlag test_init_success_fn(
+    bbSegmentedPool* pool,
+    void* object,
+    void* cl
+) {
+
+    (void)pool;
+    I32* count = cl;
+    (*count)++;
+    test_struct* test = object;
+    test->integer = 193;
+
+    return bbSuccess;
+}
+
+
+static void test_init_success(void) {
+
+    bbSegmentedPool* pool = NULL;
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
+
+    I32 callback_count = 0;
+
+    bbAssert(
+        bbSegmentedPool_new(&pool, sizeof(test_struct), 16, 4, 0, test_init_success_fn, &callback_count)
+            == bbSuccess && pool != NULL,
+        "Pool creation failed\n"
+    );
+
+    bbHandle handle;
+    test_struct* object;
+
+    for (I32 i = 0; i < 100; i++) {
+        bbFlag flag = bbSegmentedPool_alloc(pool, &handle, (void**)&object);
+
+        bbAssert(flag == bbSuccess,
+            "Allcation failed\n");
+
+        bbAssert(object->integer == 193, "Initialisation failed\n");
+
+    }
+
+    bbAssert(callback_count == 100,
+        "Initialisation callback not called 100 times\n");
+    bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
+             "Pool deletion failed\n");
+    bbWarningsAreFatal = warnings_were_fatal;
+    printf("test_init_success passed\n");
+}
+
 int main(void) {
 
     test_allocation();
     test_stale_handle();
     test_available_segments();
     test_segment_growth();
-    // Enable only when double-free warnings are nonfatal.
-    // test_double_free();
+    test_double_free();
     test_segment_lookup();
     test_invalid_lookup();
     test_stress();
+    test_init_failure();
+    test_init_success();
     printf("All enabled segmented pool tests passed!\n");
 
     return 0;

@@ -11,6 +11,8 @@
 #ifndef BB_SEGMENTED_POOL_INTERNAL_H
 #define BB_SEGMENTED_POOL_INTERNAL_H
 
+#include "engine/storage/segmented/bbSegmentedPool.h"
+
 #define BB_POOL_IN_USE UINT32_MAX
 #define BB_POOL_END_OF_LIST (UINT32_MAX-1)
 #define BB_POOL_NULL_GENERATION 0
@@ -46,6 +48,8 @@ struct bbSegmentedPool{
     U32 segment_count;
     U32 segment_capacity;
     U16 system;
+    bbSegmentedPool_initFn* init_fn;
+    void* init_cl;
 };
 
 
