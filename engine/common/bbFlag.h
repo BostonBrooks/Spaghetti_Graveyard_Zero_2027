@@ -9,6 +9,7 @@ typedef enum {
     bbSuccess, //Generic pass
     bbFail, //Generic fail
     bbFull, //Pool full
+    bbEmpty,
     bbWrongSystem, // Handle belongs to another system
     bbWrongGeneration, // Handle generation doesn't match the header
     bbOutOfBounds, // Segment index exceeds the allocated segments

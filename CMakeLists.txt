@@ -10,9 +10,10 @@ set(CMAKE_C_EXTENSIONS OFF)
 
 # Engine library
 add_library(bbEngine STATIC
+        engine/common/bbTerminal.c
+        engine/storage/deque/bbSegmentedDeque.c
         engine/storage/segmented/bbSegmentedPool.c
         engine/storage/segmented/bbSegmentedList.c
-        engine/common/bbTerminal.c
 )
 
 # Allow includes relative to the repository root
@@ -79,5 +80,27 @@ target_compile_options(Segmented_List PRIVATE
 )
 
 target_link_options(Segmented_List PRIVATE
+        -fsanitize=address,undefined
+)
+
+
+add_executable(Segmented_Deque
+        tests/Test_SegmentedDeque.c
+)
+
+target_compile_definitions(Segmented_Deque PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Segmented_Deque PRIVATE
+        bbEngine
+)
+
+target_compile_options(Segmented_Deque PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+)
+
+target_link_options(Segmented_Deque PRIVATE
         -fsanitize=address,undefined
 )
