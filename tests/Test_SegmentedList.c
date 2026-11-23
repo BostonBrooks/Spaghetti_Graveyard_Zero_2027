@@ -364,20 +364,6 @@ static void test_list_remove(void) {
         flag = bbSegmentedList_pushR(&list,(void*)test_objects[i]);
         bbAssert(flag == bbSuccess, "pushR failed\n");
     }
-    // bbHandle expected = test_handles[3];
-    // bbHandle actual;
-    //
-    // flag = bbSegmentedPool_reverseLookup(
-    //     pool, test_objects[3], &actual);
-    //
-    // bbAssert(flag == bbSuccess, "Reverse lookup failed\n");
-    //
-    // printf("Expected index: %u\n", expected.system.index);
-    // printf("Actual index:   %u\n", actual.system.index);
-    //
-    // bbAssert(
-    // bbHandle_equal(actual, test_handles[3]),
-    // "Reverse lookup returned incorrect handle\n");
 
     flag = bbSegmentedList_remove(&list,test_objects[3]);
     bbAssert(flag == bbSuccess, "remove failed\n");
@@ -435,6 +421,105 @@ static void test_list_remove(void) {
     printf("test_list_remove passed\n");
 }
 
+static void test_list_insert(void) {
+    bbSegmentedPool* pool = NULL;
+    bbSegmentedList list;
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
+
+
+    bbFlag flag =  bbSegmentedPool_new(&pool,
+        sizeof(test_struct),
+        16,
+        4,
+        7,
+        test_init_list_fn,
+        NULL);
+
+    bbAssert(flag == bbSuccess && pool != NULL, "Pool creation failed\n");
+
+    bbSegmentedList_init(&list,
+        pool,
+        offsetof(test_struct, element),
+        193,
+        NULL);
+
+    test_struct* test_objects[7];
+    bbHandle test_handles[7];
+
+    for (I32 i = 0; i < 7; i++) {
+
+        flag = bbSegmentedPool_alloc(pool,&test_handles[i],(void**)&test_objects[i]);
+        bbAssert(flag == bbSuccess && test_objects[i] != NULL, "Allocation failed\n");
+        test_objects[i]->integer = i;
+    }
+
+
+    flag = bbSegmentedList_pushL(&list,(void*)test_objects[0]);
+    bbAssert(flag == bbSuccess, "pushL failed\n");
+
+    bbSegmentedList_insertAfter(&list, test_objects[0],test_objects[3]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    bbSegmentedList_insertAfter(&list, test_objects[0],test_objects[1]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    bbSegmentedList_insertAfter(&list, test_objects[3],test_objects[5]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    bbSegmentedList_insertAfter(&list, test_objects[1],test_objects[2]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    bbSegmentedList_insertAfter(&list, test_objects[5],test_objects[6]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    bbSegmentedList_insertAfter(&list, test_objects[3],test_objects[4]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+
+    test_struct* test_object = NULL;
+    for (I32 i = 0; i < 7; i++) {
+        flag = bbSegmentedList_popL(&list,(void**)&test_object);
+        bbAssert(flag == bbSuccess, "popL failed\n");
+        bbAssert(test_object->integer == i, "Incorrect test_struct data\n");
+    }
+
+    flag = bbSegmentedList_pushR(&list,test_objects[6]);
+    bbAssert(flag == bbSuccess, "pushR failed\n");
+
+    flag = bbSegmentedList_insertBefore(&list, test_objects[6],test_objects[3]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    flag = bbSegmentedList_insertBefore(&list, test_objects[3],test_objects[1]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    flag = bbSegmentedList_insertBefore(&list, test_objects[6],test_objects[5]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    flag = bbSegmentedList_insertBefore(&list, test_objects[3],test_objects[2]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    flag = bbSegmentedList_insertBefore(&list, test_objects[5],test_objects[4]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    flag = bbSegmentedList_insertBefore(&list, test_objects[1],test_objects[0]);
+    bbAssert(flag == bbSuccess, "insertAfter failed\n");
+
+    for (I32 i = 0; i < 7; i++) {
+        flag = bbSegmentedList_popL(&list,(void**)&test_object);
+        bbAssert(flag == bbSuccess, "popL failed\n");
+        bbAssert(test_object->integer == i, "Incorrect test_struct data\n");
+        flag = bbSegmentedPool_freeObject(pool,test_object);
+        bbAssert(flag == bbSuccess, "freeObject failed\n");
+    }
+
+
+    bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
+     "Pool deletion failed\n");
+
+    bbWarningsAreFatal = warnings_were_fatal;
+    printf("test_list_insert passed\n");
+}
 
 int main() {
     test_init_success();
@@ -442,6 +527,7 @@ int main() {
     test_popR();
     test_list_mixed();
     test_list_remove();
+    test_list_insert();
 
     printf("All enabled segmented list tests passed!\n");
     exit(0);

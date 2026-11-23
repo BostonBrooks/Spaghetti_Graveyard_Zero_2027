@@ -48,4 +48,14 @@ bbFlag bbSegmentedList_popR(bbSegmentedList* list, void** element);
 
 bbFlag bbSegmentedList_remove(bbSegmentedList* list, void* element);
 
+bbFlag bbSegmentedList_insertAfter(
+    bbSegmentedList* list,
+    void* existing_element,
+    void* new_element);
+
+bbFlag bbSegmentedList_insertBefore(
+    bbSegmentedList* list,
+    void* existing_element,
+    void* new_element);
+
 #endif //BB_SEGMENTED_LIST_H

@@ -18,6 +18,14 @@
 #define BB_POOL_NULL_GENERATION 0
 #define BB_POOL_INITIAL_GENERATION 1
 
+/**
+ * @ todo Possible refinement to reduce memory use when using large,
+ *        chache line friendly alignment
+ *
+** Possible slot layout:
+ * [alignment boundary | object data | padding | metadata]
+ *
+ */
 typedef struct
 {
     bbHandle self;

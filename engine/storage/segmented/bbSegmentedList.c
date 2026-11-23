@@ -325,3 +325,93 @@ bbFlag bbSegmentedList_remove(bbSegmentedList* list, void* element) {
 
     return bbSuccess;
 }
+
+
+bbFlag bbSegmentedList_insertAfter(
+    bbSegmentedList* list,
+    void* existing_element,
+    void* new_element) {
+
+
+    bbList_header* header = list->list_pointer;
+
+    bbHandle new_handle;
+    bbFlag flag = bbSegmentedPool_reverseLookup(list->pool, new_element, &new_handle);
+    if (flag != bbSuccess) return flag;
+    bbList_element* new_link = (bbList_element*)((U8*)new_element+list->offset_of);
+
+    bbAssert(new_link->list_id == 0,
+        "Element already in a list\n");
+
+    bbHandle prev_handle;
+    flag = bbSegmentedPool_reverseLookup(list->pool, existing_element, &prev_handle);
+    if (flag != bbSuccess) return flag;
+    bbList_element* prev_link = (bbList_element*)((U8*)existing_element+list->offset_of);
+
+    bbAssert(prev_link->list_id == header->list_id,
+        "Existing element belongs to another list\n");
+
+    bbHandle next_handle = prev_link->next;
+    void* next_object;
+    flag = bbSegmentedPool_lookup(list->pool, next_handle, &next_object);
+    if (flag != bbSuccess) return flag;
+    bbList_element* next_link = (bbList_element*)((U8*)next_object+list->offset_of);
+
+    new_link->prev = prev_handle;
+    new_link->next = next_handle;
+    new_link->list_id = header->list_id;
+
+    prev_link->next = new_handle;
+    next_link->prev = new_handle;
+
+    if (bbHandle_equal(prev_handle,header->tail)) {
+        header->tail = new_handle;
+    }
+
+    return bbSuccess;
+}
+
+
+bbFlag bbSegmentedList_insertBefore(
+    bbSegmentedList* list,
+    void* existing_element,
+    void* new_element) {
+
+
+    bbList_header* header = list->list_pointer;
+
+    bbHandle new_handle;
+    bbFlag flag = bbSegmentedPool_reverseLookup(list->pool, new_element, &new_handle);
+    if (flag != bbSuccess) return flag;
+    bbList_element* new_link = (bbList_element*)((U8*)new_element+list->offset_of);
+
+    bbAssert(new_link->list_id == 0,
+        "Element already in a list\n");
+
+    bbHandle next_handle;
+    flag = bbSegmentedPool_reverseLookup(list->pool, existing_element, &next_handle);
+    if (flag != bbSuccess) return flag;
+    bbList_element* next_link = (bbList_element*)((U8*)existing_element+list->offset_of);
+
+    bbAssert(next_link->list_id == header->list_id,
+        "Existing element belongs to another list\n");
+
+    bbHandle prev_handle = next_link->prev;
+    void* prev_object;
+    flag = bbSegmentedPool_lookup(list->pool, prev_handle, &prev_object);
+    if (flag != bbSuccess) return flag;
+    bbList_element* prev_link = (bbList_element*)((U8*)prev_object+list->offset_of);
+
+    new_link->prev = prev_handle;
+    new_link->next = next_handle;
+    new_link->list_id = header->list_id;
+
+    prev_link->next = new_handle;
+    next_link->prev = new_handle;
+
+    if (bbHandle_equal(next_handle,header->head)) {
+        header->head = new_handle;
+    }
+
+    return bbSuccess;
+}
