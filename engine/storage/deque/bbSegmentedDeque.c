@@ -48,6 +48,7 @@ bbFlag bbSegmentedDeque_expandFront(bbSegmentedDeque* deque) {
         deque->head->prev = segment;
     } else {
         deque->tail = segment;
+        deque->end = BBSEGMENTEDDEQUE_SEGMENT_SIZE;
     }
     deque->head = segment;
 
@@ -82,6 +83,7 @@ bbFlag bbSegmentedDeque_expandBack(bbSegmentedDeque* deque) {
         deque->tail->next = segment;
     }else {
         deque->head = segment;
+        deque->begin = 0;
     }
     deque->tail = segment;
 
@@ -135,34 +137,88 @@ bbFlag bbSegmentedDeque_pushBack(
     bbDummyStruct* object = &segment->dummy[segment_index];
     *object = *element;
     deque->count++;
-    deque->begin++;
 
-    if (deque->begin == BBSEGMENTEDDEQUE_SEGMENT_SIZE) {
 
-    }
 
     return bbSuccess;
 
 }
 
 
+static inline void bbSegmentedDeque_removeSegment(
+    bbSegmentedDeque* deque,
+    bbDequeSegment* segment) {
+    if (segment->prev != NULL) {
+        segment->prev->next = segment->next;
+    } else {
+        deque->head = segment->next;
+    }
+    if (segment->next != NULL) {
+        segment->next->prev = segment->prev;
+    } else {
+        deque->tail = segment->prev;
+    }
+
+    if (deque->spare_segment == NULL) {
+        segment->prev = NULL;
+        segment->next = NULL;
+        deque->spare_segment = segment;
+    }
+    else {
+        free(segment);
+    }
+}
+
+
+
 bbFlag bbSegmentedDeque_popFront(
     bbSegmentedDeque* deque, bbDummyStruct* element) {
-
     if (deque->count == 0) {
         return bbEmpty;
     }
 
-    U32 index = deque->begin;
+    U32 index = deque->begin++;
     bbDequeSegment* segment = deque->head;
+    deque->count--;
+    if (element != NULL) {
+        bbAssert(index < BBSEGMENTEDDEQUE_SEGMENT_SIZE, "index out of bounds\n");
+        *element = segment->dummy[index];
+    }
+
+    if (deque->count == 0) {
+        bbSegmentedDeque_removeSegment(deque, segment);
+        deque->begin = 0;
+        deque->end = 0;
+    } else if (deque->begin == BBSEGMENTEDDEQUE_SEGMENT_SIZE) {
+        bbSegmentedDeque_removeSegment(deque, segment);
+        deque->begin = 0;
+    }
+    return bbSuccess;
+}
+
+
+bbFlag bbSegmentedDeque_popBack(
+    bbSegmentedDeque* deque, bbDummyStruct* element) {
+    if (deque->count == 0) {
+        return bbEmpty;
+    }
+
+    U32 index = --deque->end;
+    bbDequeSegment* segment = deque->tail;
+    deque->count--;
+    bbAssert(index < BBSEGMENTEDDEQUE_SEGMENT_SIZE, "index out of bounds\n");
+
     if (element != NULL) {
         *element = segment->dummy[index];
     }
 
-    deque->count--;
-
-
+    if (deque->count == 0) {
+        bbSegmentedDeque_removeSegment(deque, segment);
+        deque->begin = 0;
+        deque->end = 0;
+    } else if (deque->end == 0) {
+        bbSegmentedDeque_removeSegment(deque, segment);
+        deque->end = BBSEGMENTEDDEQUE_SEGMENT_SIZE;
+    }
+    return bbSuccess;
 }
-
-bbFlag bbSegmentedDeque_popBack(
-bbSegmentedDeque* deque, bbDummyStruct* element);

@@ -12,7 +12,7 @@ set(CMAKE_C_EXTENSIONS OFF)
 add_library(bbEngine STATIC
         engine/common/bbTerminal.c
         engine/storage/deque/bbSegmentedDeque.c
-        engine/storage/segmented/bbSegmentedPool.c
+        engine/storage/segmented/bbSegmentedPool2.c
         engine/storage/segmented/bbSegmentedList.c
 )
 
