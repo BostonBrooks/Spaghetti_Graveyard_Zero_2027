@@ -7,22 +7,30 @@ project(Spaghetti_Graveyard_Zero_2027 LANGUAGES C)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
-
+set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 # Engine library
 add_library(bbEngine STATIC
         engine/common/bbTerminal.c
         engine/storage/deque/bbSegmentedDeque.c
         engine/storage/segmented/bbSegmentedPool2.c
         engine/storage/segmented/bbSegmentedList.c
+        engine/storage/deque/bbSegmentedDeque_iterator.c
         engine/core/bbCore.c
         engine/core/bbInstruction.c
-        engine/core/bbInstruction_integrity.c
+        engine/core/bbCore_integrity.c
         engine/core/bbInstruction_internal.c
+
 )
 
 # Allow includes relative to the repository root
 target_include_directories(bbEngine PUBLIC
         ${PROJECT_SOURCE_DIR}
+)
+target_link_libraries(bbEngine PRIVATE
+        csfml-graphics
+        csfml-window
+        csfml-system
+        csfml-network
 )
 
 target_compile_options(bbEngine PRIVATE
@@ -31,6 +39,7 @@ target_compile_options(bbEngine PRIVATE
         -Wpedantic
         -fsanitize=address,undefined
         -fno-omit-frame-pointer
+        -O3
 )
 target_compile_definitions(bbEngine PRIVATE
         _POSIX_C_SOURCE=200809L
@@ -130,3 +139,50 @@ target_compile_options(Set_Time PRIVATE
 target_link_options(Set_Time PRIVATE
         -fsanitize=address,undefined
 )
+
+
+add_executable(Test_Core
+        tests/Test_Core.c
+)
+
+target_compile_definitions(Test_Core PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Test_Core PRIVATE
+        bbEngine
+)
+
+target_compile_options(Test_Core PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+)
+
+target_link_options(Test_Core PRIVATE
+        -fsanitize=address,undefined
+)
+
+
+add_executable(Test_Deque_Iterator
+        tests/Test_Deque_Iterator.c
+)
+
+target_compile_definitions(Test_Deque_Iterator PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Test_Deque_Iterator PRIVATE
+        bbEngine
+)
+
+target_compile_options(Test_Deque_Iterator PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+)
+
+target_link_options(Test_Deque_Iterator PRIVATE
+        -fsanitize=address,undefined
+)
+

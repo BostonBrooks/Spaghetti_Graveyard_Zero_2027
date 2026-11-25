@@ -1,6 +1,6 @@
 #include "engine/core/bbCore.h"
 
-#include "bbInstruction_integrity.h"
+#include "bbCore_integrity.h"
 #include "engine/core/bbInstruction_internal.h"
 bbFlag bbCore_init(bbCore* core) {
     core->instruction_functions = NULL;

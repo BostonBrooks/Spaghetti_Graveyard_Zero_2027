@@ -1,6 +1,7 @@
 
 #include "bbInstruction_internal.h"
 
+#include "bbCore_integrity.h"
 #include "engine/common/bbFlag.h"
 #include "engine/common/bbHandle.h"
 #include "engine/core/bbCore.h"
@@ -47,6 +48,8 @@ bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction) {
         undo_instruction.header.source = instruction->header.source;
         undo_instruction.data_type = bbI_data_time;
         undo_instruction.data.time = core->simulation_time;
+
+        COMPARE_INSTRUCTIONS(&core->instruction_table, instruction, &undo_instruction);
         flag = bbInstruction_deque_pushFront(&core->undo_instructions, &undo_instruction);
         bbAssert(flag == bbSuccess, "push failed in core, panic!\n");
 
@@ -75,14 +78,14 @@ bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction) {
 
     }
     core->simulation_time = instruction->data.time;
-    bbDebug("Setting time to %ld\n", core->simulation_time);
+    //bbDebug("Setting time to %ld\n", core->simulation_time);
     return bbSuccess;
 
 }
 bbFlag bbI_unsetTime_fn(bbCore* core, bbInstruction* instruction) {
 
     core->simulation_time = instruction->data.time;
-    bbDebug("Setting time back to %ld\n", core->simulation_time);
+    //bbDebug("Setting time back to %ld\n", core->simulation_time);
 
 
     if (instruction->header.source == bbInstructionSource_internal)
@@ -96,12 +99,11 @@ bbFlag bbI_unsetTime_fn(bbCore* core, bbInstruction* instruction) {
         bbFlag flag;
         flag = bbInstruction_deque_popFront(&core->redo_instructions, &redo_instruction);
         bbAssert(flag == bbSuccess, "pop failed in core, panic!\n");
+        COMPARE_INSTRUCTIONS(&core->instruction_table, &redo_instruction, instruction);
         flag = bbInstruction_deque_pushFront(&core->active_instructions, &redo_instruction);
         bbAssert(flag == bbSuccess, "push failed in core, panic!\n");
 
 
-        //Check if instruction->header.instruction_type corresponds to redo_instruction->header.instruction_type
-        bbNotImplemented()
         return bbSuccess;
     } else
     if (instruction->header.source == bbInstructionSource_action)
