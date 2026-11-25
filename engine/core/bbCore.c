@@ -8,11 +8,11 @@ bbFlag bbCore_init(bbCore* core) {
 
     bbFlag flag;
 
-    flag = bbInstruction_deque_init(&core->active_instructions);
+    flag = bbInstruction_dequeInit(&core->active_instructions);
     if (flag != bbSuccess) {return flag;}
-    flag = bbInstruction_deque_init(&core->undo_instructions);
+    flag = bbInstruction_dequeInit(&core->undo_instructions);
     if (flag != bbSuccess) {return flag;}
-    flag = bbInstruction_deque_init(&core->redo_instructions);
+    flag = bbInstruction_dequeInit(&core->redo_instructions);
     if (flag != bbSuccess) {return flag;}
 
     //I might want to load built in instructions to the instruction table here
@@ -38,9 +38,9 @@ bbFlag bbCore_react(bbCore* core) {
     bbFlag flag;
     while (1) {
         bbInstruction instruction;
-        flag = bbInstruction_deque_peekFront(&core->active_instructions,&instruction);
+        flag = bbInstruction_dequePeekFront(&core->active_instructions,&instruction);
         if (flag != bbSuccess) {return flag;}
-        bbInstruction_deque_popFront(&core->active_instructions,NULL);
+        bbInstruction_dequePopFront(&core->active_instructions,NULL);
 
         if (instruction.header.instruction_type < bbI_internal_data_count) {
             switch (instruction.header.instruction_type) {
@@ -64,9 +64,9 @@ bbFlag bbCore_rewindUntil(bbCore* core, bbTime time) {
     while (core->simulation_time > time) {
 
         bbInstruction instruction;
-        flag = bbInstruction_deque_peekFront(&core->undo_instructions,&instruction);
+        flag = bbInstruction_dequePeekFront(&core->undo_instructions,&instruction);
         if (flag != bbSuccess) {return flag;}
-        bbInstruction_deque_popFront(&core->undo_instructions,NULL);
+        bbInstruction_dequePopFront(&core->undo_instructions,NULL);
         if (instruction.header.instruction_type < bbI_internal_data_count) {
             switch (instruction.header.instruction_type) {
                 case bbI_unsetTime:

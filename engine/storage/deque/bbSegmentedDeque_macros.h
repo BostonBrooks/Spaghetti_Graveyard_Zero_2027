@@ -28,7 +28,7 @@
 } CONCAT2(BB_NAME,_dequeSegment);\
 \
 \
-typedef struct BB_NAME {\
+typedef struct CONCAT2(BB_NAME,_deque) {\
     CONCAT2(BB_NAME,_dequeSegment)* head;\
     CONCAT2(BB_NAME,_dequeSegment)* tail;\
     CONCAT2(BB_NAME,_dequeSegment)* spare_segment;\
@@ -36,38 +36,39 @@ typedef struct BB_NAME {\
     size_t count;\
     U32 begin;\
     U32 end;\
-} BB_NAME;\
+} CONCAT2(BB_NAME,_deque);\
 \
 \
-bbFlag CONCAT2(BB_NAME,_init)(BB_NAME* deque);\
-bbFlag CONCAT2(BB_NAME,_destroy)(BB_NAME* deque);\
 \
-bbFlag CONCAT2(BB_NAME,_pushFront)(\
-BB_NAME* deque, BB_CLASS* element);\
+bbFlag CONCAT2(BB_NAME,_dequeInit)( CONCAT2(BB_NAME,_deque)* deque);\
+bbFlag CONCAT2(BB_NAME,_dequeDestroy)( CONCAT2(BB_NAME,_deque)* deque);\
 \
-bbFlag CONCAT2(BB_NAME,_pushBack)(\
-BB_NAME* deque, BB_CLASS* element);\
+bbFlag CONCAT2(BB_NAME,_dequePushFront)(\
+ CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element);\
 \
-bbFlag CONCAT2(BB_NAME,_popFront)(\
-BB_NAME* deque, BB_CLASS* element);\
+bbFlag CONCAT2(BB_NAME,_dequePushBack)(\
+ CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element);\
 \
-bbFlag CONCAT2(BB_NAME,_popBack)(\
-BB_NAME* deque, BB_CLASS* element);\
+bbFlag CONCAT2(BB_NAME,_dequePopFront)(\
+ CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element);\
 \
-bbFlag CONCAT2(BB_NAME,_peekFront)(\
-const BB_NAME* deque, BB_CLASS* element);\
+bbFlag CONCAT2(BB_NAME,_dequePopBack)(\
+ CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element);\
 \
-bbFlag CONCAT2(BB_NAME,_peekBack)(\
-const BB_NAME* deque, BB_CLASS* element);\
+bbFlag CONCAT2(BB_NAME,_dequePeekFront)(\
+const  CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element);\
+\
+bbFlag CONCAT2(BB_NAME,_dequePeekBack)(\
+const  CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element);\
 
 
 #define DECLARE_DEQUE_SOURCE(BB_NAME,BB_CLASS, BB_SEGMENT_SIZE)\
-bbFlag CONCAT2(BB_NAME,_init)(BB_NAME* deque) {\
-    *deque = (BB_NAME){0};\
+bbFlag CONCAT2(BB_NAME,_dequeInit)( CONCAT2(BB_NAME,_deque)* deque) {\
+    *deque = (CONCAT2(BB_NAME,_deque)){0};\
     return bbSuccess;\
 }\
 \
-bbFlag CONCAT2(BB_NAME,_destroy)(BB_NAME* deque) {\
+bbFlag CONCAT2(BB_NAME,_dequeDestroy)( CONCAT2(BB_NAME,_deque)* deque) {\
 \
     CONCAT2(BB_NAME,_dequeSegment)* segment = deque->head;\
 \
@@ -78,13 +79,13 @@ bbFlag CONCAT2(BB_NAME,_destroy)(BB_NAME* deque) {\
     }\
 \
     free(deque->spare_segment);\
-    *deque = (BB_NAME){0};\
+    *deque = ( CONCAT2(BB_NAME,_deque)){0};\
 \
     return bbSuccess;\
 }\
 \
 \
-static bbFlag CONCAT2(BB_NAME,_expandFront)(BB_NAME* deque) {\
+static bbFlag CONCAT2(BB_NAME,_dequeExpandFront)( CONCAT2(BB_NAME,_deque)* deque) {\
     bbAssert(deque->begin == 0, "Cannot expand front, begin != 0\n");\
 \
     CONCAT2(BB_NAME,_dequeSegment)* segment = deque->spare_segment;\
@@ -116,7 +117,7 @@ static bbFlag CONCAT2(BB_NAME,_expandFront)(BB_NAME* deque) {\
 }\
 \
 \
-static bbFlag CONCAT2(BB_NAME,_expandBack)(BB_NAME* deque) {\
+static bbFlag CONCAT2(BB_NAME,_dequeExpandBack)( CONCAT2(BB_NAME,_deque)* deque) {\
     bbAssert(\
         deque->tail == NULL ||\
         deque->end == BB_SEGMENT_SIZE,\
@@ -149,16 +150,16 @@ static bbFlag CONCAT2(BB_NAME,_expandBack)(BB_NAME* deque) {\
     return bbSuccess;\
 }\
 \
-bbFlag CONCAT2(BB_NAME,_pushFront)(\
-    BB_NAME* deque, BB_CLASS* element)\
+bbFlag CONCAT2(BB_NAME,_dequePushFront)(\
+     CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element)\
 {\
 \
     bbAssert(element != NULL, "Cannot push a null element\n");\
 \
     if (deque->begin == 0) {\
-        bbFlag flag = CONCAT2(BB_NAME,_expandFront)(deque);\
+        bbFlag flag = CONCAT2(BB_NAME,_dequeExpandFront)(deque);\
         bbWarning(flag == bbSuccess,\
-            "Segemnted Deque _expandFront() failed\n");\
+            "_dequeExpandFront() failed\n");\
         if (flag != bbSuccess)  return flag;\
     }\
 \
@@ -172,8 +173,8 @@ bbFlag CONCAT2(BB_NAME,_pushFront)(\
 \
 }\
 \
-bbFlag CONCAT2(BB_NAME,_pushBack)(\
-    BB_NAME* deque, BB_CLASS* element)\
+bbFlag CONCAT2(BB_NAME,_dequePushBack)(\
+     CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element)\
 {\
 \
     bbAssert(element != NULL, "Cannot push a null element\n");\
@@ -181,9 +182,9 @@ bbFlag CONCAT2(BB_NAME,_pushBack)(\
     if (deque->end == BB_SEGMENT_SIZE\
         || deque->tail == NULL) {\
 \
-        bbFlag flag = CONCAT2(BB_NAME,_expandBack)(deque);\
+        bbFlag flag = CONCAT2(BB_NAME,_dequeExpandBack)(deque);\
         bbWarning(flag == bbSuccess,\
-            "Segemnted Deque _expandBack() failed\n");\
+            "_dequeExpandBack() failed\n");\
         if (flag != bbSuccess)  return flag;\
     }\
 \
@@ -198,7 +199,7 @@ bbFlag CONCAT2(BB_NAME,_pushBack)(\
 \
 \
 static inline void CONCAT2(BB_NAME,_removeSegment)(\
-    BB_NAME* deque,\
+     CONCAT2(BB_NAME,_deque)* deque,\
     CONCAT2(BB_NAME,_dequeSegment)* segment) {\
     if (segment->prev != NULL) {\
         segment->prev->next = segment->next;\
@@ -223,8 +224,8 @@ static inline void CONCAT2(BB_NAME,_removeSegment)(\
 \
 \
 \
-bbFlag CONCAT2(BB_NAME,_popFront)(\
-    BB_NAME* deque, BB_CLASS* element) {\
+bbFlag CONCAT2(BB_NAME,_dequePopFront)(\
+     CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element) {\
     if (deque->count == 0) {\
         return bbEmpty;\
     }\
@@ -251,8 +252,8 @@ bbFlag CONCAT2(BB_NAME,_popFront)(\
 }\
 \
 \
-bbFlag CONCAT2(BB_NAME,_popBack)(\
-    BB_NAME* deque, BB_CLASS* element) {\
+bbFlag CONCAT2(BB_NAME,_dequePopBack)(\
+     CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element) {\
     if (deque->count == 0) {\
         return bbEmpty;\
     }\
@@ -279,8 +280,8 @@ bbFlag CONCAT2(BB_NAME,_popBack)(\
 \
 \
 \
-bbFlag CONCAT2(BB_NAME,_peekFront)(\
-    const BB_NAME* deque, BB_CLASS* element) {\
+bbFlag CONCAT2(BB_NAME,_dequePeekFront)(\
+    const  CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element) {\
     if (deque->count == 0) {return bbEmpty;}\
 \
     CONCAT2(BB_NAME,_dequeSegment)* segment = deque->head;\
@@ -292,8 +293,8 @@ bbFlag CONCAT2(BB_NAME,_peekFront)(\
 \
 }\
 \
-bbFlag CONCAT2(BB_NAME,_peekBack)(\
-    const BB_NAME* deque, BB_CLASS* element) {\
+bbFlag CONCAT2(BB_NAME,_dequePeekBack)(\
+    const  CONCAT2(BB_NAME,_deque)* deque, BB_CLASS* element) {\
     if (deque->count == 0) {return bbEmpty;}\
 \
     CONCAT2(BB_NAME,_dequeSegment)* segment = deque->tail;\

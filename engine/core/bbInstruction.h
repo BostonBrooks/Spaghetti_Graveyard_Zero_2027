@@ -6,7 +6,7 @@
 #include "engine/common/bbIntTypes.h"
 #include "engine/common/bbFlag.h"
 #include "engine/common/bbHandle.h"
-#include "engine/storage/deque/bbSegmentedDeque2.h"
+#include "engine/storage/deque/bbSegmentedDeque_macros.h"
 #include "engine/timekeeping/bbTime.h"
 typedef struct bbCore bbCore;
 
@@ -73,7 +73,7 @@ typedef struct {
 
 typedef  bbFlag bbInstruction_fn(bbCore* core, bbInstruction* instruction);
 
-DECLARE_DEQUE_HEADER(bbInstruction_deque,bbInstruction, 1024)
+DECLARE_DEQUE_HEADER(bbInstruction,bbInstruction, 1024)
 
 
 

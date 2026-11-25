@@ -33,14 +33,14 @@ bbFlag bbCI_setTime(bbCore* core, bbTime time, bbInstruction_source source, bbHa
     instruction.data_type = bbI_data_time;
     instruction.data.time = time;
 
-    bbFlag flag = bbInstruction_deque_pushFront(&core->active_instructions,&instruction);
+    bbFlag flag = bbInstruction_dequePushFront(&core->active_instructions,&instruction);
     return flag;
 }
 
 bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction) {
     if (instruction->header.source == bbInstructionSource_input) {
 
-        bbFlag flag = bbInstruction_deque_pushFront(&core->redo_instructions, instruction);
+        bbFlag flag = bbInstruction_dequePushFront(&core->redo_instructions, instruction);
         bbAssert(flag == bbSuccess, "push failed in core, panic!\n");
 
         bbInstruction undo_instruction = {0};
@@ -50,7 +50,7 @@ bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction) {
         undo_instruction.data.time = core->simulation_time;
 
         COMPARE_INSTRUCTIONS(&core->instruction_table, instruction, &undo_instruction);
-        flag = bbInstruction_deque_pushFront(&core->undo_instructions, &undo_instruction);
+        flag = bbInstruction_dequePushFront(&core->undo_instructions, &undo_instruction);
         bbAssert(flag == bbSuccess, "push failed in core, panic!\n");
 
     } else if (instruction->header.source == bbInstructionSource_internal) {
@@ -62,7 +62,7 @@ bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction) {
         undo_instruction.data_type = bbI_data_time;
         undo_instruction.data.time = core->simulation_time;
         //undo_instruction.header.redo_instruction = ?
-        bbFlag flag = bbInstruction_deque_pushFront(&core->undo_instructions, &undo_instruction);
+        bbFlag flag = bbInstruction_dequePushFront(&core->undo_instructions, &undo_instruction);
         bbAssert(flag == bbSuccess, "push failed in core, panic!\n");
 
     } else if (instruction->header.source == bbInstructionSource_action) {
@@ -72,7 +72,7 @@ bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction) {
         undo_instruction.data_type = bbI_data_time;
         undo_instruction.data.time = core->simulation_time;
         undo_instruction.header.redo_instruction = instruction->header.redo_instruction;
-        bbFlag flag = bbInstruction_deque_pushFront(&core->undo_instructions, &undo_instruction);
+        bbFlag flag = bbInstruction_dequePushFront(&core->undo_instructions, &undo_instruction);
         bbAssert(flag == bbSuccess, "push failed in core, panic!\n");
     }  else if (instruction->header.source == bbInstructionSource_norewind) {
 
@@ -97,10 +97,10 @@ bbFlag bbI_unsetTime_fn(bbCore* core, bbInstruction* instruction) {
     {
         bbInstruction redo_instruction = {0};
         bbFlag flag;
-        flag = bbInstruction_deque_popFront(&core->redo_instructions, &redo_instruction);
+        flag = bbInstruction_dequePopFront(&core->redo_instructions, &redo_instruction);
         bbAssert(flag == bbSuccess, "pop failed in core, panic!\n");
         COMPARE_INSTRUCTIONS(&core->instruction_table, &redo_instruction, instruction);
-        flag = bbInstruction_deque_pushFront(&core->active_instructions, &redo_instruction);
+        flag = bbInstruction_dequePushFront(&core->active_instructions, &redo_instruction);
         bbAssert(flag == bbSuccess, "push failed in core, panic!\n");
 
 
