@@ -37,5 +37,6 @@ bbFlag bbCore_init(bbCore* core);
 bbFlag bbCore_initCallbacks(bbCore* core);
 
 bbFlag bbCore_react(bbCore* core);
+bbFlag bbCore_rewindUntil(bbCore* core, bbTime time);
 
 #endif //BB_CORE_H

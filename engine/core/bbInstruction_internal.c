@@ -16,9 +16,11 @@ bbFlag bbI_unsetString_fn(bbCore* core, bbInstruction* instruction) {
 
 bbFlag bbCI_setString(bbCore* core, char* string, bbInstruction_source source, bbHandle action) {
 
+    bbNotImplemented()
 }
 bbFlag bbCS_setString(bbCore* core, char* string, bbInstruction_source source, bbHandle action) {
 
+    bbNotImplemented()
 }
 
 bbFlag bbCI_setTime(bbCore* core, bbTime time, bbInstruction_source source, bbHandle action) {
@@ -78,6 +80,36 @@ bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction) {
 
 }
 bbFlag bbI_unsetTime_fn(bbCore* core, bbInstruction* instruction) {
+
+    core->simulation_time = instruction->data.time;
+    bbDebug("Setting time back to %ld\n", core->simulation_time);
+
+
+    if (instruction->header.source == bbInstructionSource_internal)
+    {
+        //bbVPool_free(core->instruction_pool, (void*)instruction);
+        return bbSuccess;
+    } else
+    if (instruction->header.source == bbInstructionSource_input)
+    {
+        bbInstruction redo_instruction = {0};
+        bbFlag flag;
+        flag = bbInstruction_deque_popFront(&core->redo_instructions, &redo_instruction);
+        bbAssert(flag == bbSuccess, "pop failed in core, panic!\n");
+        flag = bbInstruction_deque_pushFront(&core->active_instructions, &redo_instruction);
+        bbAssert(flag == bbSuccess, "push failed in core, panic!\n");
+
+
+        //Check if instruction->header.instruction_type corresponds to redo_instruction->header.instruction_type
+        bbNotImplemented()
+        return bbSuccess;
+    } else
+    if (instruction->header.source == bbInstructionSource_action)
+    {
+        bbNotImplemented()
+        return bbSuccess;
+    }
+    bbNotHere();
+
     return bbSuccess;
 }
-

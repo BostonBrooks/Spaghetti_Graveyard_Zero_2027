@@ -3,8 +3,12 @@
 #include "engine/core/bbInstruction_internal.h"
 
 static void test_set_time(void) {
+
+    printf("Initializing core\n");
     bbCore core;
     bbCore_init(&core);
+
+    printf("Setting time\n");
 
     bbCI_setTime(&core, 16, bbInstructionSource_input,(bbHandle){0});
     bbCore_react(&core);
@@ -15,6 +19,16 @@ static void test_set_time(void) {
     bbCI_setTime(&core, 21, bbInstructionSource_input,(bbHandle){0});
     bbCore_react(&core);
 
+    printf("Rewinding time\n");
+
+    bbCore_rewindUntil(&core, 17);
+
+    printf("Redoing time\n");
+
+    bbCore_react(&core);
+
+
+    printf("test_set_time passed\n");
 }
 
 

@@ -41,6 +41,7 @@ bbFlag bbCore_react(bbCore* core) {
         flag = bbInstruction_deque_peekFront(&core->active_instructions,&instruction);
         if (flag != bbSuccess) {return flag;}
         bbInstruction_deque_popFront(&core->active_instructions,NULL);
+
         if (instruction.header.instruction_type < bbI_internal_data_count) {
             switch (instruction.header.instruction_type) {
                 case bbI_setTime:
@@ -57,3 +58,28 @@ bbFlag bbCore_react(bbCore* core) {
     }
 }
 
+
+bbFlag bbCore_rewindUntil(bbCore* core, bbTime time) {
+    bbFlag flag;
+    while (core->simulation_time > time) {
+
+        bbInstruction instruction;
+        flag = bbInstruction_deque_peekFront(&core->undo_instructions,&instruction);
+        if (flag != bbSuccess) {return flag;}
+        bbInstruction_deque_popFront(&core->undo_instructions,NULL);
+        if (instruction.header.instruction_type < bbI_internal_data_count) {
+            switch (instruction.header.instruction_type) {
+                case bbI_unsetTime:
+                    bbI_unsetTime_fn(core,&instruction);
+                    break;
+
+                case bbI_unsetString:
+                    bbI_unsetString_fn(core,&instruction);
+                    break;
+                default:
+                    bbAssert(0==1,"Unknown instruction type %d\n", instruction.header.instruction_type);
+            }
+        }
+    }
+    return bbSuccess;
+}
