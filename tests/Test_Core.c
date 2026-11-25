@@ -1,5 +1,6 @@
 
 #include "engine/core/bbCore.h"
+#include "engine/core/bbCore_integrity.h"
 #include "engine/core/bbInstruction_internal.h"
 #include "engine/dependencies/CSFML.h"
 static void test_core(void) {
@@ -7,6 +8,8 @@ static void test_core(void) {
     printf("Initializing core\n");
     bbCore core;
     bbCore_init(&core);
+
+    bbFlag flag;
 
     sfClock *clock =sfClock_create();
     bbAssert(clock != NULL, "sfClock_create failed");
@@ -23,17 +26,33 @@ static void test_core(void) {
     sfTime time = sfClock_restart(clock);
     printf("bbCI_setTime() takes %lld microseconds\n", sfTime_asMicroseconds(time));
 
-    bbCore_rewindUntil(&core, 0);
+    flag = bbCore_checkIntegrity(&core);
+    time = sfClock_restart(clock);
+    printf("bbCore_checkIntegrity() takes %lld microseconds\n", sfTime_asMicroseconds(time));
+    printf("flag=%d\n", flag);
+
+    flag = bbCore_rewindUntil(&core, 0);
 
 
     bbAssert(core.simulation_time == 0, "core left in unexpected state\n");
     time = sfClock_restart(clock);
     printf("bbCore_rewindUntil() takes %lld microseconds\n", sfTime_asMicroseconds(time));
+    printf("flag=%d\n", flag);
 
-    bbCore_react(&core);
+    flag = bbCore_checkIntegrity(&core);
+    time = sfClock_restart(clock);
+    printf("bbCore_checkIntegrity() takes %lld microseconds\n", sfTime_asMicroseconds(time));
+    printf("flag=%d\n", flag);
 
+    flag = bbCore_react(&core);
     time = sfClock_restart(clock);
     printf("bbCore_react() takes %lld microseconds\n", sfTime_asMicroseconds(time));
+    printf("flag=%d\n", flag);
+
+    flag = bbCore_checkIntegrity(&core);
+    time = sfClock_restart(clock);
+    printf("bbCore_checkIntegrity() takes %lld microseconds\n", sfTime_asMicroseconds(time));
+    printf("flag=%d\n", flag);
 
     bbAssert(core.active_instructions.count == 0, "instructions left on active stack\n");
     bbAssert(core.undo_instructions.count == 1000000, "wrong number of instructions on undo deque\n");

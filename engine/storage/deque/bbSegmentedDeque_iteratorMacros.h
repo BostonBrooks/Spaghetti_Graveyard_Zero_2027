@@ -2,8 +2,9 @@
 #ifndef BB_SEGMENTED_DEQUE_ITERATOR_MACROS_H
 #define BB_SEGMENTED_DEQUE_ITERATOR_MACROS_H
 
-#include "bbSegmentedDeque_iterator.h"
-#include "engine/storage/deque/bbSegmentedDeque.h"
+#include <stddef.h>
+#include <stdbool.h>
+
 #include "engine/common/bbFlag.h"
 
 
@@ -42,8 +43,8 @@ bbFlag CONCAT2(BB_NAME,_dequeIteratorPrev)(\
 \
 \
 bbFlag CONCAT2(BB_NAME,_dequeIteratorGet)(\
-    CONCAT2(BB_NAME,_dequeIterator)* iterator,\
-    const BB_CLASS** data);\
+    const CONCAT2(BB_NAME,_dequeIterator)* iterator,\
+    const BB_CLASS** data);
 
 
 #define DECLARE_DEQUE_ITERATOR_SOURCE(BB_NAME,BB_CLASS, BB_SEGMENT_SIZE)\
@@ -55,7 +56,7 @@ bbFlag CONCAT2(BB_NAME,_dequeIteratorFront)(\
     const BB_CLASS** data)\
 {\
     if (deque->count == 0) {\
-        *data = NULL;\
+        if(data != NULL) *data = NULL;\
         return bbEmpty;\
     }\
     iterator->segment = deque->head;\
@@ -75,7 +76,7 @@ bbFlag  CONCAT2(BB_NAME,_dequeIteratorBack)(\
 \
 {\
     if (deque->count == 0) {\
-        *data = NULL;\
+        if(data != NULL) *data = NULL;\
         return bbEmpty;\
     }\
     iterator->segment = deque->tail;\
@@ -84,7 +85,7 @@ bbFlag  CONCAT2(BB_NAME,_dequeIteratorBack)(\
     iterator->count = deque->count;\
 \
     if (data != NULL) {\
-        *data = &deque->head->data[iterator->index];\
+        *data = &deque->tail->data[iterator->index];\
     }\
     return bbSuccess;\
 }\
@@ -94,7 +95,7 @@ bbFlag CONCAT2(BB_NAME,_dequeIteratorNext)(\
     const BB_CLASS** data)\
 {\
     if (iterator->position >= iterator->count\
-        || iterator->index >= BBSEGMENTEDDEQUE_SEGMENT_SIZE\
+        || iterator->index >= BB_SEGMENT_SIZE\
         || iterator->segment == NULL) {\
         if (data != NULL) *data = NULL;\
         bbWarning(false, "Invalid deque iterator\n");\
@@ -107,7 +108,7 @@ bbFlag CONCAT2(BB_NAME,_dequeIteratorNext)(\
         return bbEmpty;\
     }\
 \
-    if (iterator->index == BBSEGMENTEDDEQUE_SEGMENT_SIZE - 1) {\
+    if (iterator->index == BB_SEGMENT_SIZE - 1) {\
         bbAssert(iterator->segment->next != NULL, "Unexpected end of list\n");\
         iterator->segment = iterator->segment->next;\
         iterator->index = 0;\
@@ -127,12 +128,12 @@ bbFlag CONCAT2(BB_NAME,_dequeIteratorPrev)(\
     const BB_CLASS** data)\
 {\
     if (iterator->position >= iterator->count\
-        || iterator->index >= BBSEGMENTEDDEQUE_SEGMENT_SIZE\
+        || iterator->index >= BB_SEGMENT_SIZE\
         || iterator->segment == NULL) {\
         if (data != NULL) *data = NULL;\
         bbWarning(false, "Invalid deque iterator\n");\
         return bbFail;\
-        }\
+    }\
 \
 \
 \
@@ -144,7 +145,7 @@ bbFlag CONCAT2(BB_NAME,_dequeIteratorPrev)(\
     if (iterator->index == 0) {\
         bbAssert(iterator->segment->prev != NULL, "Unexpected end of list\n");\
         iterator->segment = iterator->segment->prev;\
-        iterator->index = BBSEGMENTEDDEQUE_SEGMENT_SIZE - 1;\
+        iterator->index = BB_SEGMENT_SIZE - 1;\
     } else {\
         iterator->index--;\
     }\
@@ -157,17 +158,17 @@ bbFlag CONCAT2(BB_NAME,_dequeIteratorPrev)(\
 }\
 \
 bbFlag CONCAT2(BB_NAME,_dequeIteratorGet)(\
-    CONCAT2(BB_NAME,_dequeIterator)* iterator,\
+    const CONCAT2(BB_NAME,_dequeIterator)* iterator,\
     const BB_CLASS** data)\
 {\
 \
     if (iterator->position >= iterator->count\
-        || iterator->index >= BBSEGMENTEDDEQUE_SEGMENT_SIZE\
+        || iterator->index >= BB_SEGMENT_SIZE\
         || iterator->segment == NULL) {\
         if (data != NULL) *data = NULL;\
         bbWarning(false, "Invalid deque iterator\n");\
         return bbFail;\
-        }\
+    }\
 \
 \
     U32 index = iterator->index;\
@@ -178,7 +179,7 @@ bbFlag CONCAT2(BB_NAME,_dequeIteratorGet)(\
 \
     return bbSuccess;\
 \
-}\
+}
 
 
 #endif //BB_SEGMENTED_DEQUE_ITERATOR_MACROS_H

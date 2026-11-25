@@ -58,7 +58,35 @@ bbFlag bbCore_compareInstructions(
 
 bbFlag bbCore_checkIntegrity(bbCore* core) {
     bbInstructionTable* table = &core->instruction_table;
+    bbFlag flag;
     bbInstruction_deque *undo = &core->undo_instructions;
+    bbInstruction_dequeIterator undo_iterator;
+    const bbInstruction* undo_instruction;
+    flag = bbInstruction_dequeIteratorBack(undo, &undo_iterator,&undo_instruction);
+    if (flag!=bbSuccess) {return flag;}
+
     bbInstruction_deque *redo = &core->redo_instructions;
-    bbNotImplemented();
+    bbInstruction_dequeIterator redo_iterator;
+    const bbInstruction* redo_instruction;
+    flag = bbInstruction_dequeIteratorBack(redo, &redo_iterator,&redo_instruction);
+    if (flag!=bbSuccess) {return flag;}
+    while (1) {
+        if (undo_instruction->header.source == bbInstructionSource_input) {
+            U32 undo_type = undo_instruction->header.instruction_type;
+            U32 redo_type = redo_instruction->header.instruction_type;
+            U32 redo_expected = table->forward[undo_type];
+            U32 undo_expected = table->rollback[redo_type];
+
+            bbAssert(undo_expected == undo_type &&
+                redo_expected == redo_type,
+                "Instruction type mismatch, panic\n");
+
+
+            flag = bbInstruction_dequeIteratorPrev(&redo_iterator,&redo_instruction);
+            if (flag!=bbSuccess) {return flag;}
+        }
+
+        flag = bbInstruction_dequeIteratorPrev(&undo_iterator,&undo_instruction);
+        if (flag!=bbSuccess) {return flag;}
+    }
 }
