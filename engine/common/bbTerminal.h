@@ -4,13 +4,16 @@
 #define BB_TERMINAL_H
 
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <threads.h>
 
+#include "engine/timekeeping/bbTime.h"
 
 extern _Thread_local bool bbWarningsAreFatal;
 extern _Thread_local  bool debug_off;
 extern _Thread_local  char* thread;
+extern bbTime test_time;
 
 #ifdef _WIN32
 
@@ -63,6 +66,11 @@ fflush(stderr);\
 abort();\
 } while(0)
 
+#define bbNotImplemented()\
+    printf ("In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s, TIME: %lu\nBB_NOT_IMPLEMENTED\n",\
+__FILE_NAME__, __func__, __LINE__, thread, test_time);
+
+
 #define bbHere()\
 do {\
 if(!debug_off){\
@@ -75,12 +83,10 @@ fflush(stderr);\
 #define bbDebug(...)\
 do {\
 if(!debug_off){\
-bbLockStderr();\
-fprintf (stderr, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s\n"\
+fprintf (stdout, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s\n"\
 "DEBUG: ", __FILE_NAME__, __func__, __LINE__, thread);\
-fprintf(stderr, __VA_ARGS__);\
-bbUnlockStderr();\
-fflush(stderr);\
+fprintf(stdout, __VA_ARGS__);\
+fflush(stdout);\
 }\
 } while(0)
 #endif //BB_TERMINAL_H

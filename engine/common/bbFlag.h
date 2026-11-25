@@ -16,6 +16,7 @@ typedef enum {
     bbNull, // Handle has the reserved null generation
     bbDoubleFree, // Freeing object not in use
     bbNotAllocated,
+    bbMallocFailed,
 
 } bbFlag;
 

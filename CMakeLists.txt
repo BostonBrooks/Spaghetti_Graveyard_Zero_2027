@@ -14,6 +14,10 @@ add_library(bbEngine STATIC
         engine/storage/deque/bbSegmentedDeque.c
         engine/storage/segmented/bbSegmentedPool2.c
         engine/storage/segmented/bbSegmentedList.c
+        engine/core/bbCore.c
+        engine/core/bbInstruction.c
+        engine/core/bbInstruction_integrity.c
+        engine/core/bbInstruction_internal.c
 )
 
 # Allow includes relative to the repository root
@@ -102,5 +106,27 @@ target_compile_options(Segmented_Deque PRIVATE
 )
 
 target_link_options(Segmented_Deque PRIVATE
+        -fsanitize=address,undefined
+)
+
+
+add_executable(Set_Time
+        tests/Test_setTime.c
+)
+
+target_compile_definitions(Set_Time PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Set_Time PRIVATE
+        bbEngine
+)
+
+target_compile_options(Set_Time PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+)
+
+target_link_options(Set_Time PRIVATE
         -fsanitize=address,undefined
 )
