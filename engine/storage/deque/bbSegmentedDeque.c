@@ -222,3 +222,31 @@ bbFlag bbSegmentedDeque_popBack(
     }
     return bbSuccess;
 }
+
+
+
+bbFlag bbSegmentedDeque_peekFront(
+    const bbSegmentedDeque* deque, bbDummyStruct* element) {
+    if (deque->count == 0) {return bbEmpty;}
+
+    bbDequeSegment* segment = deque->head;
+    U32 index = deque->begin;
+    if (element != NULL) {
+        *element = segment->dummy[index];
+    }
+    return bbSuccess;
+
+}
+
+bbFlag bbSegmentedDeque_peekBack(
+    const bbSegmentedDeque* deque, bbDummyStruct* element) {
+    if (deque->count == 0) {return bbEmpty;}
+
+    bbDequeSegment* segment = deque->tail;
+    U32 index = deque->end-1;
+    if (element != NULL) {
+        *element = segment->dummy[index];
+    }
+    return bbSuccess;
+
+}

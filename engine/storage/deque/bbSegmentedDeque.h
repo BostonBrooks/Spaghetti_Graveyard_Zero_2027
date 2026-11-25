@@ -48,9 +48,9 @@ bbFlag bbSegmentedDeque_popBack(
 bbSegmentedDeque* deque, bbDummyStruct* element);
 
 bbFlag bbSegmentedDeque_peekFront(
-bbSegmentedDeque* deque, bbDummyStruct* element);
+const bbSegmentedDeque* deque, bbDummyStruct* element);
 
 bbFlag bbSegmentedDeque_peekBack(
-bbSegmentedDeque* deque, bbDummyStruct* element);
+const bbSegmentedDeque* deque, bbDummyStruct* element);
 
 #endif //BB_BB_SEGMENTED_DEQUE_H
