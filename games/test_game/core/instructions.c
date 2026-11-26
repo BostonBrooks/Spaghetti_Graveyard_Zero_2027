@@ -4,6 +4,7 @@
 #include "engine/core/bbCore.h"
 #include "engine/core/bbCore_integrity.h"
 #include "games/test_game/code/set_string.h"
+
 ///The game designer provides this function to populate callback vtables
 bbFlag bbInstructions_init(bbCore* core) {
     I32 max_instructions = bbVInstruction_numTypes - bbInstruction_numTypes;

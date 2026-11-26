@@ -3,6 +3,8 @@
 #include "engine/core/bbCore_integrity.h"
 #include "engine/core/bbInstruction_internal.h"
 #include "engine/dependencies/CSFML.h"
+#include "games/test_game/code/set_string.h"
+
 static void test_core(void) {
 
     printf("Initializing core\n");
@@ -70,9 +72,28 @@ static void test_core(void) {
 }
 
 
+static void test_vtable(void) {
+
+    printf("Initializing core\n");
+    bbCore core;
+    bbCore_init(&core);
+    bbInstructions_init(&core);
+    bbInstructionTable_initVirtual(&core.instruction_table);
+    bbFlag flag;
+
+    bbCI_setString(&core, "I am good\n",bbInstructionSource_input,(bbHandle){0});
+    bbCore_react(&core);
+
+    flag = bbCore_destroy(&core);
+    bbAssert(flag == bbSuccess,"bbCore_destroy() failed\n");
+    printf("test_vtable passed\n");
+}
+
+
 int main(void) {
 
     test_core();
+    test_vtable();
     printf("All enabled core tests passed!\n");
 
     return 0;
