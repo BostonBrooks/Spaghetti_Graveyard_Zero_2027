@@ -3,7 +3,7 @@
 #include "engine/actions/bbAction.h"
 #include "engine/common/bbFlag.h"
 #include "engine/core/bbCore.h"
-
+extern char test_set_string[128];
 
 //bbFlag bbAction_setString(...)
 bbFlag bbAction_setString_fn(bbCore* core, bbAction* action);

@@ -4,7 +4,7 @@
 #include "engine/common/bbFlag.h"
 #include "engine/common/bbHandle.h"
 
-extern char test_string[128];
+extern char test_set_string[128];
 
 
 bbFlag bbCI_setTime(bbCore* core, bbTime time, bbInstruction_source source, bbHandle action);
