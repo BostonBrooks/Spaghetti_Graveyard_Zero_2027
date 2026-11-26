@@ -3,6 +3,11 @@ cmake_minimum_required(VERSION 3.16)
 
 project(Spaghetti_Graveyard_Zero_2027 LANGUAGES C)
 
+
+
+if (CSFML3)
+    add_definitions(-DBB_CSFML3=1)
+endif (CSFML3)
 # Use C17
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
@@ -12,9 +17,10 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 add_library(bbEngine STATIC
         engine/common/bbTerminal.c
         engine/storage/deque/bbSegmentedDeque.c
+        engine/storage/deque/bbSegmentedDeque_iterator.c
         engine/storage/segmented/bbSegmentedPool2.c
         engine/storage/segmented/bbSegmentedList.c
-        engine/storage/deque/bbSegmentedDeque_iterator.c
+        engine/storage/segmented/bbSegmentedList_sort.c
         engine/core/bbCore.c
         engine/core/bbInstruction.c
         engine/core/bbCore_integrity.c

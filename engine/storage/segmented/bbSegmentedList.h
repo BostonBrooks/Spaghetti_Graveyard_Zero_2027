@@ -58,4 +58,14 @@ bbFlag bbSegmentedList_insertBefore(
     void* existing_element,
     void* new_element);
 
+bbFlag bbSegmentedList_getNext(
+    bbSegmentedList* list,
+    void* this_element,
+    void** next_element);
+
+bbFlag bbSegmentedList_getPrev(
+    bbSegmentedList* list,
+    void* this_element,
+    void** prev_element);
+
 #endif //BB_SEGMENTED_LIST_H
