@@ -29,6 +29,27 @@ bbFlag bbCore_init(bbCore* core) {
     return bbSuccess;
 }
 
+
+bbFlag bbCore_destroy(bbCore* core)
+{
+    free(core->instruction_functions);
+    core->instruction_functions = NULL;
+    free(core->discard_functions);
+    core->discard_functions = NULL;
+    bbInstruction_dequeDestroy(&core->active_instructions);
+    bbInstruction_dequeDestroy(&core->undo_instructions);
+    bbInstruction_dequeDestroy(&core->redo_instructions);
+
+    free(core->instruction_table.forward);
+    core->instruction_table.forward = NULL;
+    free(core->instruction_table.rollback);
+    core->instruction_table.rollback = NULL;
+    core->instruction_table.count = 0;
+
+    return bbSuccess;
+
+}
+
 ///The game designer provides this function to populate callback tbales
 bbFlag bbCore_initCallbacks(bbCore* core);
 
@@ -39,6 +60,7 @@ bbFlag bbCore_react(bbCore* core) {
     while (1) {
         bbInstruction instruction;
         flag = bbInstruction_dequePeekFront(&core->active_instructions,&instruction);
+        if (flag == bbEmpty) return bbSuccess;
         if (flag != bbSuccess) {return flag;}
         bbInstruction_dequePopFront(&core->active_instructions,NULL);
 
@@ -65,6 +87,7 @@ bbFlag bbCore_rewindUntil(bbCore* core, bbTime time) {
 
         bbInstruction instruction;
         flag = bbInstruction_dequePeekFront(&core->undo_instructions,&instruction);
+        if (flag == bbEmpty) return bbSuccess;
         if (flag != bbSuccess) {return flag;}
         bbInstruction_dequePopFront(&core->undo_instructions,NULL);
         if (instruction.header.instruction_type < bbI_internal_data_count) {

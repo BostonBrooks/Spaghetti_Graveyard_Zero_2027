@@ -58,18 +58,18 @@ bbFlag bbCore_compareInstructions(
 
 bbFlag bbCore_checkIntegrity(bbCore* core) {
     bbInstructionTable* table = &core->instruction_table;
-    bbFlag flag;
+    bbFlag flag1, flag2;
     bbInstruction_deque *undo = &core->undo_instructions;
     bbInstruction_dequeIterator undo_iterator;
     const bbInstruction* undo_instruction;
-    flag = bbInstruction_dequeIteratorBack(undo, &undo_iterator,&undo_instruction);
-    if (flag!=bbSuccess) {return flag;}
+    flag1 = bbInstruction_dequeIteratorBack(undo, &undo_iterator,&undo_instruction);
+    if (flag1!=bbSuccess) {return flag1;}
 
     bbInstruction_deque *redo = &core->redo_instructions;
     bbInstruction_dequeIterator redo_iterator;
     const bbInstruction* redo_instruction;
-    flag = bbInstruction_dequeIteratorBack(redo, &redo_iterator,&redo_instruction);
-    if (flag!=bbSuccess) {return flag;}
+    flag1 = bbInstruction_dequeIteratorBack(redo, &redo_iterator,&redo_instruction);
+    if (flag1!=bbSuccess) {return flag1;}
     while (1) {
         if (undo_instruction->header.source == bbInstructionSource_input) {
             U32 undo_type = undo_instruction->header.instruction_type;
@@ -82,11 +82,23 @@ bbFlag bbCore_checkIntegrity(bbCore* core) {
                 "Instruction type mismatch, panic\n");
 
 
-            flag = bbInstruction_dequeIteratorPrev(&redo_iterator,&redo_instruction);
-            if (flag!=bbSuccess) {return flag;}
+            flag2 = bbInstruction_dequeIteratorPrev(&redo_iterator,&redo_instruction);
+
         }
 
-        flag = bbInstruction_dequeIteratorPrev(&undo_iterator,&undo_instruction);
-        if (flag!=bbSuccess) {return flag;}
+        flag1 = bbInstruction_dequeIteratorPrev(&undo_iterator,&undo_instruction);
+        if (flag1!=bbSuccess) {break;}
     }
+
+    if (flag1!=bbEmpty)
+    {
+        bbWarning(false, "Did not complete scanning undo instructions\n");
+        return bbFail;
+    }
+    if (flag2!=bbEmpty)
+    {
+        bbWarning(false, "Did not complete scanning redo instructions\n");
+        return bbFail;
+    }
+    return bbSuccess;
 }

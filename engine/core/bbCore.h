@@ -32,7 +32,7 @@ struct bbCore {
 };
 
 bbFlag bbCore_init(bbCore* core);
-
+bbFlag bbCore_destroy(bbCore* core);
 ///The game designer provides this function to populate callback vtables
 bbFlag bbCore_initCallbacks(bbCore* core);
 
