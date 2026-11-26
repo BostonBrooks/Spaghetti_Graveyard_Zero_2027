@@ -7,6 +7,7 @@
 #define WRONG_FUNCTION_TYPE UINT32_MAX
 
 bbFlag bbInstructionTable_initInternal(bbInstructionTable* table);
+bbFlag bbInstructionTable_initVirtual(bbInstructionTable* table);
 
 bbFlag bbCore_compareInstructions(
     const bbInstructionTable* table,

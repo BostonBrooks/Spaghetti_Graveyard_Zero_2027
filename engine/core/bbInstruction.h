@@ -16,8 +16,8 @@ typedef enum
     bbI_setTime,
     bbI_unsetTime,
 
-    bbI_setString,
-    bbI_unsetString,
+    //bbI_setString,
+    //bbI_unsetString,
 
     bbInstruction_numTypes
 } bbInstruction_type;
@@ -78,5 +78,7 @@ DECLARE_DEQUE_HEADER(bbInstruction,bbInstruction, 1024)
 DECLARE_DEQUE_ITERATOR_HEADER(bbInstruction,bbInstruction, 1024)
 
 
+///The game designer provides this function to populate callback vtables
+bbFlag bbInstructions_init(bbCore* core);
 
 #endif //BB_INSTRUCTION_H

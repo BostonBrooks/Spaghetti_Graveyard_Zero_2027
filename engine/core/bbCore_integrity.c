@@ -13,7 +13,7 @@ bbFlag bbInstructionTable_initInternal(bbInstructionTable* table) {
     if (table->forward == NULL || table->rollback == NULL) {
         free(table->forward);
         free(table->rollback);
-        bbWarning(0==1, "Calloc failed\n");
+        bbWarning(false, "Calloc failed\n");
         return bbFail;
     }
     table->count = bbInstruction_numTypes;
@@ -25,8 +25,9 @@ bbFlag bbInstructionTable_initInternal(bbInstructionTable* table) {
         table->rollback[i] = WRONG_FUNCTION_TYPE;
     }
 
-    table->forward[bbI_unsetString] = bbI_setString;
-    table->rollback[bbI_setString] = bbI_unsetString;
+    //moved to /games/test_game
+    //table->forward[bbI_unsetString] = bbI_setString;
+    //table->rollback[bbI_setString] = bbI_unsetString;
 
 
     table->forward[bbI_unsetTime] = bbI_setTime;

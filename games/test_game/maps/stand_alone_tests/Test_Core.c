@@ -8,7 +8,8 @@ static void test_core(void) {
     printf("Initializing core\n");
     bbCore core;
     bbCore_init(&core);
-
+    bbInstructions_init(&core);
+    bbInstructionTable_initVirtual(&core.instruction_table);
     bbFlag flag;
 
     sfClock *clock =sfClock_create();

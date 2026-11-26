@@ -51,8 +51,38 @@ target_compile_definitions(bbEngine PRIVATE
         _POSIX_C_SOURCE=200809L
 )
 
+
+add_library(Test_Game STATIC
+        games/test_game/code/set_string.c
+        games/test_game/core/instructions.c
+
+)
+
+# Allow includes relative to the repository root
+target_include_directories(Test_Game PUBLIC
+        ${PROJECT_SOURCE_DIR}
+)
+target_link_libraries(Test_Game PRIVATE
+        csfml-graphics
+        csfml-window
+        csfml-system
+        csfml-network
+)
+
+target_compile_options(Test_Game PRIVATE
+        -Wall
+        -Wextra
+        -Wpedantic
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+)
+target_compile_definitions(Test_Game PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
 add_executable(Hello_World
-        tests/Test_HelloWorld.c
+        games/test_game/maps/stand_alone_tests/Test_HelloWorld.c
 )
 
 target_link_libraries(Hello_World PRIVATE
@@ -61,7 +91,7 @@ target_link_libraries(Hello_World PRIVATE
 
 
 add_executable(Segmented_Pool
-        tests/Test_SegmentedPool.c
+        games/test_game/maps/stand_alone_tests/Test_SegmentedPool.c
 )
 
 target_compile_definitions(Segmented_Pool PRIVATE
@@ -82,7 +112,7 @@ target_link_options(Segmented_Pool PRIVATE
 )
 
 add_executable(Segmented_List
-        tests/Test_SegmentedList.c
+        games/test_game/maps/stand_alone_tests/Test_SegmentedList.c
 )
 
 target_compile_definitions(Segmented_List PRIVATE
@@ -104,7 +134,7 @@ target_link_options(Segmented_List PRIVATE
 
 
 add_executable(Segmented_Deque
-        tests/Test_SegmentedDeque.c
+        games/test_game/maps/stand_alone_tests/Test_SegmentedDeque.c
 )
 
 target_compile_definitions(Segmented_Deque PRIVATE
@@ -126,7 +156,7 @@ target_link_options(Segmented_Deque PRIVATE
 
 
 add_executable(Set_Time
-        tests/Test_setTime.c
+        games/test_game/maps/stand_alone_tests/Test_setTime.c
 )
 
 target_compile_definitions(Set_Time PRIVATE
@@ -148,7 +178,7 @@ target_link_options(Set_Time PRIVATE
 
 
 add_executable(Test_Core
-        tests/Test_Core.c
+        games/test_game/maps/stand_alone_tests/Test_Core.c
 )
 
 target_compile_definitions(Test_Core PRIVATE
@@ -157,6 +187,7 @@ target_compile_definitions(Test_Core PRIVATE
 
 target_link_libraries(Test_Core PRIVATE
         bbEngine
+        Test_Game
 )
 
 target_compile_options(Test_Core PRIVATE
@@ -171,7 +202,7 @@ target_link_options(Test_Core PRIVATE
 
 
 add_executable(Test_Deque_Iterator
-        tests/Test_Deque_Iterator.c
+        games/test_game/maps/stand_alone_tests/Test_Deque_Iterator.c
 )
 
 target_compile_definitions(Test_Deque_Iterator PRIVATE
@@ -194,7 +225,7 @@ target_link_options(Test_Deque_Iterator PRIVATE
 
 
 add_executable(Test_SortL
-        tests/Test_SegmentedList_sort.c
+        games/test_game/maps/stand_alone_tests/Test_SegmentedList_sort.c
 )
 
 target_compile_definitions(Test_SortL PRIVATE
@@ -214,5 +245,4 @@ target_compile_options(Test_SortL PRIVATE
 target_link_options(Test_SortL PRIVATE
         -fsanitize=address,undefined
 )
-
 

@@ -25,6 +25,7 @@ bbFlag bbCore_init(bbCore* core) {
     core->actual_time = 0;
     core->local_context = NULL;
     core->global_context = NULL;
+    core->actions = NULL;
 
     return bbSuccess;
 }
@@ -70,12 +71,18 @@ bbFlag bbCore_react(bbCore* core) {
                     bbI_setTime_fn(core,&instruction);
                     break;
 
-                case bbI_setString:
-                    bbI_setString_fn(core,&instruction);
-                    break;
+                    //moved to /games/test_game
+                //case bbI_setString:
+                    //bbI_setString_fn(core,&instruction);
+                    //break;
                 default:
                     bbAssert(0==1,"Unknown instruction type %d\n", instruction.header.instruction_type);
             }
+        } else {
+            bbInstruction_fn* function =
+                core->instruction_functions[instruction.header.instruction_type - bbInstruction_numTypes];
+                bbAssert(function != NULL, "instruction function not found, panic\n");
+                function(core,&instruction);
         }
     }
 }
@@ -96,12 +103,18 @@ bbFlag bbCore_rewindUntil(bbCore* core, bbTime time) {
                     bbI_unsetTime_fn(core,&instruction);
                     break;
 
-                case bbI_unsetString:
-                    bbI_unsetString_fn(core,&instruction);
-                    break;
+                    //moved to /games/test_game
+                //case bbI_unsetString:
+                    //bbI_unsetString_fn(core,&instruction);
+                    //break;
                 default:
                     bbAssert(0==1,"Unknown instruction type %d\n", instruction.header.instruction_type);
             }
+        } else {
+            bbInstruction_fn* function =
+                core->instruction_functions[instruction.header.instruction_type - bbInstruction_numTypes];
+            bbAssert(function != NULL, "instruction function not found, panic\n");
+            function(core,&instruction);
         }
     }
     return bbSuccess;

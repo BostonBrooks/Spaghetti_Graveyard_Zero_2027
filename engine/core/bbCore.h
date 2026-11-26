@@ -6,7 +6,7 @@
 #include "engine/timekeeping/bbTime.h"
 
 typedef struct bbCore bbCore;
-
+typedef struct bbActions bbActions;
 
 struct bbCore {
     //callbacks for active, undo and redo instructions
@@ -26,15 +26,13 @@ struct bbCore {
     bbTime actual_time;
 
 
-
+    bbActions* actions;
     void* local_context; //per-map data
     void* global_context; //per-game data
 };
 
 bbFlag bbCore_init(bbCore* core);
 bbFlag bbCore_destroy(bbCore* core);
-///The game designer provides this function to populate callback vtables
-bbFlag bbCore_initCallbacks(bbCore* core);
 
 bbFlag bbCore_react(bbCore* core);
 bbFlag bbCore_rewindUntil(bbCore* core, bbTime time);

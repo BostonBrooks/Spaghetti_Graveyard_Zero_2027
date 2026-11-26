@@ -6,10 +6,6 @@
 
 extern char test_string[128];
 
-bbFlag bbI_setString_fn(bbCore* core, bbInstruction* instruction);
-bbFlag bbI_unsetString_fn(bbCore* core, bbInstruction* instruction);
-bbFlag bbCI_setString(bbCore* core, char* string, bbInstruction_source source, bbHandle action);
-bbFlag bbCS_setString(bbCore* core, char* string, bbInstruction_source source, bbHandle action);
 
 bbFlag bbCI_setTime(bbCore* core, bbTime time, bbInstruction_source source, bbHandle action);
 bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction);

@@ -46,7 +46,7 @@ typedef struct
     bbAction_data data;
 } bbAction;
 
-typedef  bbFlag bbAction_fn(bbCore* core, bbActions* actions, bbAction* action);
+typedef  bbFlag bbAction_fn(bbCore* core, bbAction* action);
 
 typedef struct bbActions
 {
@@ -55,10 +55,15 @@ typedef struct bbActions
     bbSegmentedList action_queue;
     bbSegmentedList temp_fifo;
     bbAction_fn** action_functions;
+    U32 num_action_functions;
+    bbCore* core;
 
 } bbActions;
 
-bbFlag bbActions_init();
+///Should be called after bbCore_init()
+bbFlag bbActions_init(bbCore* core, bbActions* actions);
+///Supplied by the game developer, should be called after bbCore_init()
+bbFlag bbActions_initFunctions(bbCore* core, bbActions* actions);
 
 I32 bbAction_comparator(
     void* object_A,
