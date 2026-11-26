@@ -521,14 +521,106 @@ static void test_list_insert(void) {
     printf("test_list_insert passed\n");
 }
 
+
+static void test_list_getNext(void) {
+    bbSegmentedPool* pool = NULL;
+    bbSegmentedList list;
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
+
+
+    bbFlag flag =  bbSegmentedPool_new(&pool,
+        sizeof(test_struct),
+        16,
+        4,
+        7,
+        test_init_list_fn,
+        NULL);
+
+    bbAssert(flag == bbSuccess && pool != NULL, "Pool creation failed\n");
+
+    bbSegmentedList_init(&list,
+        pool,
+        offsetof(test_struct, element),
+        193,
+        NULL);
+
+    test_struct* test_objects[7];
+    bbHandle test_handles[7];
+
+    for (I32 i = 0; i < 7; i++) {
+
+        flag = bbSegmentedPool_alloc(pool,&test_handles[i],(void**)&test_objects[i]);
+        bbAssert(flag == bbSuccess && test_objects[i] != NULL, "Allocation failed\n");
+        test_objects[i]->integer = i;
+        flag = bbSegmentedList_pushR(&list,(void*)test_objects[i]);
+        bbAssert(flag == bbSuccess, "pushR failed\n");
+    }
+
+    test_struct* test_object = test_objects[2];
+    flag = bbSegmentedList_getNext(&list,test_objects[0],(void**)&test_object);
+    bbAssert(test_object != NULL && flag == bbSuccess, "getNext failed\n");
+    bbAssert(test_object->integer == 1, "getNext returned incorrect data\n");
+
+    flag = bbSegmentedList_getPrev(&list,test_object,(void**)&test_object);
+    bbAssert(test_object != NULL && flag == bbSuccess, "getPrev failed\n");
+    bbAssert(test_object->integer == 0, "getPrev returned incorrect data\n");
+
+    flag = bbSegmentedList_getNext(
+        &list, test_objects[3], (void**)&test_object);
+
+    bbAssert(flag == bbSuccess &&
+             test_object == test_objects[4],
+             "getNext across segment boundary failed\n");
+
+    flag = bbSegmentedList_getPrev(
+        &list, test_object, (void**)&test_object);
+
+    bbAssert(flag == bbSuccess &&
+             test_object == test_objects[3],
+             "getPrev across segment boundary failed\n");
+
+    flag = bbSegmentedList_getNext(
+        &list, test_objects[6], (void**)&test_object);
+
+    bbAssert(flag == bbEmpty, "Expected bbEmpty\n");
+
+    flag = bbSegmentedList_getPrev(
+        &list, test_objects[0], (void**)&test_object);
+
+    bbAssert(flag == bbEmpty, "Expected bbEmpty\n");
+
+    test_struct* foreign_object = NULL;
+    flag = bbSegmentedPool_alloc(pool,NULL,(void**)&foreign_object);
+    bbAssert(flag == bbSuccess && foreign_object != NULL, "Allocation failed\n");
+
+
+    flag = bbSegmentedList_getPrev(
+        &list, foreign_object, (void**)&test_object);
+    bbAssert(flag == bbFail, "bbSegmentedList_getPrev() Expected bbFail\n");
+
+    flag = bbSegmentedList_getNext(
+        &list, foreign_object, (void**)&test_object);
+    bbAssert(flag == bbFail, "bbSegmentedList_getNext() Expected bbFail\n");
+
+
+    bbAssert(bbSegmentedPool_delete(&pool) == bbSuccess,
+     "Pool deletion failed\n");
+
+    bbWarningsAreFatal = warnings_were_fatal;
+    printf("test_list_getNext passed\n");
+}
+
 int main() {
+
+    debug_off = false;
     test_init_success();
     test_popL();
     test_popR();
     test_list_mixed();
     test_list_remove();
     test_list_insert();
-
+    test_list_getNext();
     printf("All enabled segmented list tests passed!\n");
     exit(0);
 }

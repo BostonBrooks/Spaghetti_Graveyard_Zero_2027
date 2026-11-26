@@ -152,7 +152,7 @@ bbFlag bbSegmentedList_popL(bbSegmentedList* list, void** element) {
     if (isNULL(header->head)){
         bbAssert(isNULL(header->tail), "head / tail mismatch\n");
 
-        return bbNull;
+        return bbEmpty;
     }
 
     void* head_object;
@@ -212,7 +212,7 @@ bbFlag bbSegmentedList_popR(bbSegmentedList* list, void** element) {
     if (isNULL(header->head)){
         bbAssert(isNULL(header->tail), "head / tail mismatch\n");
 
-        return bbNull;
+        return bbEmpty;
     }
 
     void* head_object;
@@ -428,22 +428,30 @@ bbFlag bbSegmentedList_getNext(
 
     if (this_link->list_id != header->list_id)
     {
-        bbWarning(false, "")
+        bbWarning(false, "Performing a list operation on a member not in the list\n");
+        return bbFail;
     }
 
     bbHandle this_handle;
     bbFlag flag = bbSegmentedPool_reverseLookup(list->pool, this_element, &this_handle);
-    if (flag != bbSuccess) return flag;
+    if (flag != bbSuccess)
+    {
+        return flag;
+    }
 
-    if (bbHandle_equal(this_handle, header->tail)) return bbEmpty;
-
+    if (bbHandle_equal(this_handle, header->tail))
+    {
+        return bbEmpty;
+    }
 
 
     bbHandle next_handle = this_link->next;
     void* next_object;
     flag = bbSegmentedPool_lookup(list->pool, next_handle, &next_object);
-    if (flag != bbSuccess) return flag;
-
+    if (flag != bbSuccess)
+    {
+        return flag;
+    }
     *next_element = next_object;
 
     return  bbSuccess;
@@ -454,4 +462,37 @@ bbFlag bbSegmentedList_getNext(
 bbFlag bbSegmentedList_getPrev(
     bbSegmentedList* list,
     void* this_element,
-    void** prev_element);
+    void** prev_element)
+
+
+{
+    if (prev_element == NULL) {return bbNull;}
+    *prev_element = NULL;
+    bbList_header* header = list->list_pointer;
+    bbList_element* this_link = (bbList_element*)((U8*)this_element+list->offset_of);
+
+    if (this_link->list_id != header->list_id)
+    {
+        bbWarning(false, "Performing a list operation on a member not in the list\n");
+        return bbFail;
+    }
+
+    bbHandle this_handle;
+    bbFlag flag = bbSegmentedPool_reverseLookup(list->pool, this_element, &this_handle);
+    if (flag != bbSuccess) return flag;
+
+    if (bbHandle_equal(this_handle, header->head)) return bbEmpty;
+
+
+
+    bbHandle prev_handle = this_link->prev;
+    void* prev_object;
+    flag = bbSegmentedPool_lookup(list->pool, prev_handle, &prev_object);
+    if (flag != bbSuccess) return flag;
+
+    *prev_element = prev_object;
+
+    return  bbSuccess;
+
+
+}

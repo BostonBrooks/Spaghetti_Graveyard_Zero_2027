@@ -74,9 +74,9 @@ __FILE_NAME__, __func__, __LINE__, thread, test_time);
 #define bbHere()\
 do {\
 if(!debug_off){\
-fprintf (stderr, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s\n"\
+fprintf (stdout, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s\n"\
 "BB_HERE\n", __FILE_NAME__, __func__, __LINE__, thread);\
-fflush(stderr);\
+fflush(stdout);\
 }\
 } while(0)
 

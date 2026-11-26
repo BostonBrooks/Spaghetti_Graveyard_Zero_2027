@@ -192,3 +192,27 @@ target_link_options(Test_Deque_Iterator PRIVATE
         -fsanitize=address,undefined
 )
 
+
+add_executable(Test_SortL
+        tests/Test_SegmentedList_sort.c
+)
+
+target_compile_definitions(Test_SortL PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Test_SortL PRIVATE
+        bbEngine
+)
+
+target_compile_options(Test_SortL PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+)
+
+target_link_options(Test_SortL PRIVATE
+        -fsanitize=address,undefined
+)
+
+

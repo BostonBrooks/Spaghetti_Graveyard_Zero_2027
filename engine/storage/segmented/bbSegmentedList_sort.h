@@ -1,13 +1,15 @@
 #ifndef BB_SEGMENTED_LIST_SORT_H
 #define BB_SEGMENTED_LIST_SORT_H
 
-#include "bbSegmentedList.h"
+#include "engine/storage/segmented/bbSegmentedList.h"
 
-typedef bbFlag bbSegmentedList_comparator(
-    bbSegmentedList* list,
+/** Negative: a belongs before b.
+Zero: a and b have equal sorting keys.
+Positive: a belongs after b.
+*/
+typedef I32 bbSegmentedList_comparator(
     void* object_A,
-    void* object_B,
-    void* cl);
+    void* object_B);
 
 
 ///insert element into appropriate position in the list, searching from the left
