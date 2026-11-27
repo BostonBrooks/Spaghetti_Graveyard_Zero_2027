@@ -65,7 +65,6 @@ bbFlag bbI_setString_fn(bbCore* core, bbInstruction* instruction) {
 
 }
 bbFlag bbI_unsetString_fn(bbCore* core, bbInstruction* instruction) {
-    core->simulation_time = instruction->data.time;
     bbStr_setStr(
     test_set_string,
     instruction->data.maxPayload.string,

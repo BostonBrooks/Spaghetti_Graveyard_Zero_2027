@@ -1,3 +1,6 @@
+#ifndef BB_ACTION_H
+#define BB_ACTION_H
+
 #include "engine/common/bbIntTypes.h"
 #include "engine/core/bbCore.h"
 #include "engine/storage/segmented/bbSegmentedList.h"
@@ -53,7 +56,7 @@ typedef struct bbActions
     bbSegmentedPool* pool;
     bbSegmentedList all_actions;
     bbSegmentedList action_queue;
-    bbSegmentedList temp_fifo;
+    bbSegmentedList temp_lifo;
     bbAction_fn** action_functions;
     U32 num_action_functions;
     bbCore* core;
@@ -68,3 +71,5 @@ bbFlag bbActions_initFunctions(bbCore* core, bbActions* actions);
 I32 bbAction_comparator(
     void* object_A,
     void* object_B);
+
+#endif //BB_ACTION_H

@@ -65,7 +65,7 @@ bbFlag bbCore_react(bbCore* core) {
         if (flag != bbSuccess) {return flag;}
         bbInstruction_dequePopFront(&core->active_instructions,NULL);
 
-        if (instruction.header.instruction_type < bbI_internal_data_count) {
+        if (instruction.header.instruction_type <  bbInstruction_numTypes) {
             switch (instruction.header.instruction_type) {
                 case bbI_setTime:
                     bbI_setTime_fn(core,&instruction);
@@ -76,12 +76,13 @@ bbFlag bbCore_react(bbCore* core) {
                     //bbI_setString_fn(core,&instruction);
                     //break;
                 default:
-                    bbAssert(0==1,"Unknown instruction type %d\n", instruction.header.instruction_type);
+                    bbAssert(false,"Unknown instruction type %d\n", instruction.header.instruction_type);
             }
         } else {
             bbInstruction_fn* function =
                 core->instruction_functions[instruction.header.instruction_type - bbInstruction_numTypes];
-                bbAssert(function != NULL, "instruction function not found, panic\n");
+                bbAssert(function != NULL, "instruction function not found, panic\n"
+                    "instruction_type = %d\n", instruction.header.instruction_type);
                 function(core,&instruction);
         }
     }

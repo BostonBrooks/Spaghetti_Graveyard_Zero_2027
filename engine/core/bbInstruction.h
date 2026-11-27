@@ -16,9 +16,6 @@ typedef enum
     bbI_setTime,
     bbI_unsetTime,
 
-    //bbI_setString,
-    //bbI_unsetString,
-
     bbInstruction_numTypes
 } bbInstruction_type;
 
@@ -46,6 +43,7 @@ typedef union
 } bbInstruction_data;
 
 typedef enum {
+    bbI_data_empty,
     bbI_data_maxPayload,
     bbI_data_time,
     bbI_internal_data_count

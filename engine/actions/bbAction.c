@@ -61,7 +61,7 @@ bbFlag bbActions_init(bbCore* core, bbActions* actions) {
     }
 
     flag = bbSegmentedList_init(
-        &actions->temp_fifo,
+        &actions->temp_lifo,
         actions->pool,
         offsetof(bbAction, header.action_queue),
         120,

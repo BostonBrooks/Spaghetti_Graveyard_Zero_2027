@@ -25,6 +25,8 @@ add_library(bbEngine STATIC
         engine/core/bbInstruction.c
         engine/core/bbCore_integrity.c
         engine/core/bbInstruction_internal.c
+        engine/actions/bbAction_instructions.c
+        engine/actions/bbAction.c
 
 )
 
@@ -56,6 +58,10 @@ add_library(Test_Game STATIC
         games/test_game/code/set_string.c
         games/test_game/core/instructions.c
 
+)
+
+target_link_libraries(Test_Game PUBLIC
+        bbEngine
 )
 
 # Allow includes relative to the repository root
@@ -246,3 +252,26 @@ target_link_options(Test_SortL PRIVATE
         -fsanitize=address,undefined
 )
 
+
+add_executable(Test_Actions
+        games/test_game/maps/stand_alone_tests/Test_Actions.c
+)
+
+target_compile_definitions(Test_Actions PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Test_Actions PRIVATE
+        bbEngine
+        Test_Game
+)
+
+target_compile_options(Test_Actions PRIVATE
+        -fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+)
+
+target_link_options(Test_Actions PRIVATE
+        -fsanitize=address,undefined
+)

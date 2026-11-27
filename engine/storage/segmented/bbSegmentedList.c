@@ -259,6 +259,20 @@ bbFlag bbSegmentedList_popR(bbSegmentedList* list, void** element) {
 }
 
 
+
+bbFlag bbSegmentedList_peekL(bbSegmentedList* list, void** element) {
+    bbHandle handle = list->list_pointer->head;
+    bbFlag flag = bbSegmentedPool_lookup(list->pool, handle, element);
+    if (flag == bbNull) return bbEmpty;
+    return flag;
+}
+bbFlag bbSegmentedList_peekR(bbSegmentedList* list, void** element) {
+    bbHandle handle = list->list_pointer->tail;
+    bbFlag flag = bbSegmentedPool_lookup(list->pool, handle, element);
+    if (flag == bbNull) return bbEmpty;
+    return flag;
+}
+
 bbFlag bbSegmentedList_remove(bbSegmentedList* list, void* element) {
     bbAssert(list != NULL, "Passing null list\n");
     bbAssert(element != NULL, "Passing null element\n");

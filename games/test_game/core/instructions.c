@@ -4,12 +4,16 @@
 #include "engine/core/bbCore.h"
 #include "engine/core/bbCore_integrity.h"
 #include "games/test_game/code/set_string.h"
+#include "engine/actions/bbAction_instructions.h"
 
 ///The game designer provides this function to populate callback vtables
 bbFlag bbInstructions_init(bbCore* core) {
     I32 max_instructions = bbVInstruction_numTypes - bbInstruction_numTypes;
     bbInstruction_fn** functions = calloc( max_instructions, sizeof(bbInstruction_fn*));
     bbAssert(functions != NULL, "calloc failed\n");
+
+    functions[bbI_checkActions -bbInstruction_numTypes] = bbI_checkActions_fn;
+    functions[bbI_uncheckActions -bbInstruction_numTypes] = bbI_uncheckActions_fn;
 
     functions[bbI_setString -bbInstruction_numTypes] = bbI_setString_fn;
     functions[bbI_unsetString -bbInstruction_numTypes] = bbI_unsetString_fn;
@@ -38,6 +42,9 @@ bbFlag bbInstructionTable_initVirtual(bbInstructionTable* table) {
         forward[i] = WRONG_FUNCTION_TYPE;
         rollback[i] = WRONG_FUNCTION_TYPE;
     }
+
+    table->forward[bbI_uncheckActions] = bbI_checkActions;
+    table->rollback[bbI_checkActions] = bbI_uncheckActions;
 
     table->forward[bbI_unsetString] = bbI_setString;
     table->rollback[bbI_setString] = bbI_unsetString;

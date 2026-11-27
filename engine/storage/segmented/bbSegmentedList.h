@@ -44,6 +44,8 @@ bbFlag bbSegmentedList_pushR(bbSegmentedList* list, void* element);
 bbFlag bbSegmentedList_pushL(bbSegmentedList* list, void* element);
 bbFlag bbSegmentedList_popL(bbSegmentedList* list, void** element);
 bbFlag bbSegmentedList_popR(bbSegmentedList* list, void** element);
+bbFlag bbSegmentedList_peekL(bbSegmentedList* list, void** element);
+bbFlag bbSegmentedList_peekR(bbSegmentedList* list, void** element);
 
 
 bbFlag bbSegmentedList_remove(bbSegmentedList* list, void* element);
