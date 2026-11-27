@@ -89,4 +89,15 @@ fprintf(stdout, __VA_ARGS__);\
 fflush(stdout);\
 }\
 } while(0)
+
+
+
+#define bbPrintf(...)\
+do {\
+if(!debug_off){\
+fprintf (stdout, "DEBUG: ");\
+fprintf(stdout, __VA_ARGS__);\
+fflush(stdout);\
+}\
+} while(0)
 #endif //BB_TERMINAL_H

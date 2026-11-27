@@ -69,6 +69,8 @@ bbFlag bbActions_init(bbCore* core, bbActions* actions);
 ///Supplied by the game developer, should be called after bbCore_init()
 bbFlag bbActions_initFunctions(bbActions* actions);
 
+bbFlag bbActions_destroy(bbActions* actions);
+
 bbFlag bbActions_request(bbActions* actions, bbNetwork* network, bbAction* action);
 
 I32 bbAction_comparator(

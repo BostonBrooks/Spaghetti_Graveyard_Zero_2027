@@ -34,6 +34,8 @@ bbFlag bbI_checkActions_fn(bbCore* core, bbInstruction* instruction) {
 
     flag = bbSegmentedList_peekL(queue, (void**)&action);
     if (flag == bbEmpty) goto BOOKKEEPING;
+    bbAssert(flag == bbSuccess, "Action queue lookup failed\n");
+
 #ifndef NO_ROLLBACK
     if (action->header.act_tick < core->simulation_time) //or < the previous time this instruction was called?
     {
@@ -56,7 +58,8 @@ bbFlag bbI_checkActions_fn(bbCore* core, bbInstruction* instruction) {
     flag = bbSegmentedList_popL(lifo, (void**)&action);
     while (flag == bbSuccess) {
         bbHandle handle;
-        bbSegmentedPool_reverseLookup(queue->pool, (void**)&action,&handle);
+        flag = bbSegmentedPool_reverseLookup(queue->pool, action,&handle);
+        bbAssert(flag == bbSuccess, "Action reverse lookup failed\n");
 
         if (action->header.type == bbActionType_setString)
         {

@@ -63,7 +63,7 @@ bbFlag bbI_setTime_fn(bbCore* core, bbInstruction* instruction) {
     }
     core->simulation_time = instruction->data.time;
     test_time = instruction->data.time;
-    //bbDebug("Setting time to %ld\n", core->simulation_time);
+    bbPrintf("Setting time to %ld\n", core->simulation_time);
     return bbSuccess;
 
 }
@@ -71,7 +71,7 @@ bbFlag bbI_unsetTime_fn(bbCore* core, bbInstruction* instruction) {
 
     core->simulation_time = instruction->data.time;
     test_time = instruction->data.time;
-    //bbDebug("Setting time back to %ld\n", core->simulation_time);
+    bbPrintf("Setting time back to %ld\n", core->simulation_time);
 
 
     if (instruction->header.source == bbInstructionSource_internal)

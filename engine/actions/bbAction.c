@@ -126,13 +126,26 @@ I32 bbAction_comparator(
     bbAction* action_B = (bbAction*)object_B;
 
 
-    if (action_A->header.act_tick < action_B->header.act_tick) return 1;
-    if (action_A->header.act_tick > action_B->header.act_tick) return  -1;
-    if (action_A->header.collision < action_B->header.collision) return 1;
-    if (action_A->header.collision > action_B->header.collision) return -1;
-    if (action_A->header.sender < action_B->header.sender) return 1;
-    if (action_A->header.sender > action_B->header.sender) return -1;
+    if (action_A->header.act_tick < action_B->header.act_tick) return -1;
+    if (action_A->header.act_tick > action_B->header.act_tick) return  1;
+    if (action_A->header.collision < action_B->header.collision) return -1;
+    if (action_A->header.collision > action_B->header.collision) return 1;
+    if (action_A->header.sender < action_B->header.sender) return -1;
+    if (action_A->header.sender > action_B->header.sender) return 1;
 
     bbWarning(false,"Failed to enforce total ordering on actions\n");
     return 0;
+}
+
+
+bbFlag bbActions_destroy(bbActions* actions) {
+
+    bbFlag flag;
+    flag = bbSegmentedPool_delete(&actions->pool);
+    bbAssert(flag == bbSuccess, "bbSegmentedPool_delete failed\n");
+    free(actions->action_functions);
+    actions->core->actions = NULL;
+    *actions = (bbActions){0};
+    return bbSuccess;
+
 }

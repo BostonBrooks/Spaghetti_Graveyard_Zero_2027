@@ -6,7 +6,12 @@
 #include "engine/core/bbInstruction_internal.h"
 #include "games/test_game/code/set_string.h"
 
+
+
 static void test_init_actions(void) {
+
+    bool warnings_were_fatal = bbWarningsAreFatal;
+    bbWarningsAreFatal = 0;
 
     printf("Initializing core\n");
     bbCore core;
@@ -31,6 +36,12 @@ static void test_init_actions(void) {
         bbAssert(flag == bbSuccess,"bbCI_setTime() returns  flag=%d\n", flag);
         flag = bbCore_react(&core);
         bbAssert(flag == bbSuccess,"bbCore_react() returns  flag=%d\n", flag);
+
+        flag = bbCI_checkActions(&core,i,bbInstructionSource_input,(bbHandle){0});
+        bbAssert(flag == bbSuccess,"checkActions() returns  flag=%d\n", flag);
+        flag = bbCore_react(&core);
+        bbAssert(flag == bbSuccess,"bbCore_react() returns  flag=%d\n", flag);
+
     }
 
     bbHere();
@@ -39,13 +50,32 @@ static void test_init_actions(void) {
                        "Expected TIME: 3",
                        0,
                        0,
-                       3,
+                       6,
                        3);
+
+
 
     flag = bbCI_checkActions(
         &core,
-        0,
-        bbInstructionSource_internal,
+        6,
+        bbInstructionSource_input,
+        (bbHandle){0});
+
+    bbCore_react(&core);
+
+    bbAction_setString(&core,
+                   "Expected TIME: 1",
+                   0,
+                   0,
+                   6,
+                   1);
+
+
+
+    flag = bbCI_checkActions(
+        &core,
+        6,
+        bbInstructionSource_input,
         (bbHandle){0});
 
     bbCore_react(&core);
@@ -53,7 +83,13 @@ static void test_init_actions(void) {
 
     bbHere();
 
+    flag = bbActions_destroy(&actions);
+    bbAssert(flag == bbSuccess,"bbActions_destroy() returns flag=%d\n", flag);
 
+    flag = bbCore_destroy(&core);
+    bbAssert(flag == bbSuccess,"bbCore_destroy() returns flag=%d\n", flag);
+
+    bbWarningsAreFatal = warnings_were_fatal;
     printf("test_init_actions passed\n");
 }
 

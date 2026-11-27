@@ -2,7 +2,8 @@
 #include "games/test_game/core/instructions.h"
 #include "engine/common/bbString.h"
 #include "engine/core/bbCore_integrity.h"
-char test_set_string[128];
+#include "engine/storage/segmented/bbSegmentedList_sort.h"
+char test_set_string[128] = "initial value for set string";
 
 bbFlag bbI_setString_fn(bbCore* core, bbInstruction* instruction) {
 
@@ -92,7 +93,15 @@ bbFlag bbI_unsetString_fn(bbCore* core, bbInstruction* instruction) {
         } else
             if (instruction->header.source == bbInstructionSource_action)
             {
-                bbNotImplemented()
+                bbAction* redo_action;
+                bbSegmentedPool_lookup(
+                    core->actions->pool,
+                    instruction->header.redo_instruction,
+                    (void**)&redo_action);
+
+                bbSegmentedList_sortL(&core->actions->action_queue, bbAction_comparator,redo_action);
+
+
                 return bbSuccess;
             }
     bbNotHere();
@@ -122,12 +131,18 @@ bbFlag bbCS_setString(bbCore* core, char* string, bbInstruction_source source, b
 
 }
 
+bbFlag bbA_setString_fn(bbCore* core, bbAction* action)
+{
+    bbHandle handle;
 
-bbFlag bbA_setString_fn(bbCore* core, bbAction* action) {
-    bbDebug("set string = %s\n", action->data.string);
-    return bbSuccess;
+    bbFlag flag = bbSegmentedPool_reverseLookup(
+        core->actions->action_queue.pool, action, &handle);
+
+    bbAssert(flag == bbSuccess, "Action reverse lookup failed\n");
+
+    return bbCI_setString(core, action->data.string,
+                          bbInstructionSource_action, handle);
 }
-
 
 bbFlag bbAction_setString(void* Core,
                             char* string,
