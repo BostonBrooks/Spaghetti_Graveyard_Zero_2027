@@ -4,6 +4,7 @@
 #include "engine/common/bbFlag.h"
 #include "engine/core/bbCore.h"
 extern char test_set_string[128];
+//#define BB_PRINT_SETSTRING
 
 bbFlag bbAction_setString(void* Core,
                             char* string,

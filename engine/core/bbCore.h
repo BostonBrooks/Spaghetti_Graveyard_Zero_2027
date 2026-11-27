@@ -3,6 +3,7 @@
 #define BB_CORE_H
 #include "engine/common/bbFlag.h"
 #include "engine/core/bbInstruction.h"
+#include "engine/profiling/bbProfiling.h"
 #include "engine/timekeeping/bbTime.h"
 
 typedef struct bbCore bbCore;
@@ -29,6 +30,7 @@ struct bbCore {
     bbActions* actions;
     void* local_context; //per-map data
     void* global_context; //per-game data
+
 };
 
 bbFlag bbCore_init(bbCore* core);

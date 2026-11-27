@@ -93,6 +93,8 @@ bbFlag bbActions_request(
     bbNetwork* network,
     bbAction* action)
 {
+
+    BB_PROFILE_INC(actions_received);
     if (action->header.status == bbAction_Local) {
         bbAction* action_element;
         bbSegmentedPool_alloc(actions->pool,NULL,(void**)&action_element);

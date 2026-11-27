@@ -61,7 +61,9 @@ bbFlag bbI_setString_fn(bbCore* core, bbInstruction* instruction) {
         test_set_string,
         instruction->data.maxPayload.string,
         sizeof(instruction->data.maxPayload));
-    bbDebug("string = %s\n", instruction->data.maxPayload.string);
+#ifdef BB_PRINT_SETSTRING
+    bbDebug("string: %s\n", test_set_string);
+#endif
     return bbSuccess;
 
 }
@@ -70,8 +72,9 @@ bbFlag bbI_unsetString_fn(bbCore* core, bbInstruction* instruction) {
     test_set_string,
     instruction->data.maxPayload.string,
     sizeof(instruction->data.maxPayload));
-    bbDebug("string = %s\n", instruction->data.maxPayload.string);
-
+#ifdef BB_PRINT_SETSTRING
+    bbDebug("string: %s\n", test_set_string);
+#endif
 
     if (instruction->header.source == bbInstructionSource_internal)
     {

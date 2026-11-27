@@ -65,6 +65,7 @@ bbFlag bbCore_react(bbCore* core) {
         if (flag != bbSuccess) {return flag;}
         bbInstruction_dequePopFront(&core->active_instructions,NULL);
 
+        BB_PROFILE_INC(instructions_executed);
         if (instruction.header.instruction_type <  bbInstruction_numTypes) {
             switch (instruction.header.instruction_type) {
                 case bbI_setTime:
@@ -98,6 +99,8 @@ bbFlag bbCore_rewindUntil(bbCore* core, bbTime time) {
         if (flag == bbEmpty) return bbSuccess;
         if (flag != bbSuccess) {return flag;}
         bbInstruction_dequePopFront(&core->undo_instructions,NULL);
+
+        BB_PROFILE_INC(instructions_undone);
         if (instruction.header.instruction_type < bbI_internal_data_count) {
             switch (instruction.header.instruction_type) {
                 case bbI_unsetTime:

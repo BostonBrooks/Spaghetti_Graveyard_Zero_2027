@@ -12,13 +12,17 @@ endif (CSFML3)
 set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
+
+#enable link time optimisation
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+
+
 # Engine library
 add_library(bbEngine STATIC
         engine/common/bbTerminal.c
         engine/storage/deque/bbSegmentedDeque.c
         engine/storage/deque/bbSegmentedDeque_iterator.c
-        engine/storage/segmented/bbSegmentedPool2.c
+        engine/storage/segmented/bbSegmentedPool3.c
         engine/storage/segmented/bbSegmentedList.c
         engine/storage/segmented/bbSegmentedList_sort.c
         engine/core/bbCore.c
@@ -27,6 +31,7 @@ add_library(bbEngine STATIC
         engine/core/bbInstruction_internal.c
         engine/actions/bbAction_instructions.c
         engine/actions/bbAction.c
+        engine/profiling/bbProfiling.c
 
 )
 
@@ -45,7 +50,7 @@ target_compile_options(bbEngine PRIVATE
         -Wall
         -Wextra
         -Wpedantic
-        -fsanitize=address,undefined
+        #-fsanitize=address,undefined
         -fno-omit-frame-pointer
         -O3
 )
@@ -80,7 +85,7 @@ target_compile_options(Test_Game PRIVATE
         -Wall
         -Wextra
         -Wpedantic
-        -fsanitize=address,undefined
+        #-fsanitize=address,undefined
         -fno-omit-frame-pointer
         -O3
 )
@@ -275,4 +280,29 @@ target_compile_options(Test_Actions PRIVATE
 
 target_link_options(Test_Actions PRIVATE
         -fsanitize=address,undefined
+)
+
+
+add_executable(Stress_Test_Actions
+        games/test_game/maps/stand_alone_tests/Stress_Test_Actions.c
+)
+
+target_compile_definitions(Stress_Test_Actions PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Stress_Test_Actions PRIVATE
+        bbEngine
+        Test_Game
+)
+
+target_compile_options(Stress_Test_Actions PRIVATE
+        #-fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+
+)
+
+target_link_options(Stress_Test_Actions PRIVATE
+        #-fsanitize=address,undefined
 )

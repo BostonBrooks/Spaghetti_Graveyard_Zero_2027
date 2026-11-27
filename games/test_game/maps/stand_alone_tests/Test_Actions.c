@@ -8,7 +8,7 @@
 
 
 
-static void test_init_actions(void) {
+static void stress_test_actions(void) {
 
     bool warnings_were_fatal = bbWarningsAreFatal;
     bbWarningsAreFatal = 0;
@@ -96,7 +96,7 @@ static void test_init_actions(void) {
 
 int main(void) {
 
-    test_init_actions();
+    stress_test_actions();
     printf("All enabled action tests passed!\n");
 
     return 0;

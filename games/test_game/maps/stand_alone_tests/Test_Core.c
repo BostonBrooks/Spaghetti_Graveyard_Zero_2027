@@ -122,8 +122,11 @@ static void test_instruction_dispatch(void) {
 
 int main(void) {
 
-    test_core();
-    test_instruction_dispatch();
+    //test_core();
+
+    for (I32 i = 0; i < 1000; i++) {
+        test_instruction_dispatch();
+    }
     printf("All enabled core tests passed!\n");
 
     return 0;

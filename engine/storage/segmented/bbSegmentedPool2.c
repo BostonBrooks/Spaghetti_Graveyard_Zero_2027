@@ -177,6 +177,7 @@ bbFlag bbSegmentedPool_new(
     if (pool == NULL)
         return bbFail;
 
+    pool->system = system;
     pool->alignment = alignment;
     pool->element_stride = element_stride;
     pool->data_offset = data_offset;

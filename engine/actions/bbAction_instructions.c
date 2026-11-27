@@ -61,6 +61,7 @@ bbFlag bbI_checkActions_fn(bbCore* core, bbInstruction* instruction) {
         flag = bbSegmentedPool_reverseLookup(queue->pool, action,&handle);
         bbAssert(flag == bbSuccess, "Action reverse lookup failed\n");
 
+        BB_PROFILE_INC(actions_executed);
         if (action->header.type == bbActionType_setString)
         {
             bbCI_setString(core,action->data.string,bbInstructionSource_action,handle);
