@@ -7,10 +7,11 @@
 #include "engine/timekeeping/bbTime.h"
 
 typedef struct bbActions bbActions;
-
+typedef struct bbNetwork bbNetwork;
 typedef enum
 {
     bbActionType_setString,
+    bbActionType_num,
 } bbAction_type;
 
 typedef enum
@@ -66,7 +67,9 @@ typedef struct bbActions
 ///Should be called after bbCore_init()
 bbFlag bbActions_init(bbCore* core, bbActions* actions);
 ///Supplied by the game developer, should be called after bbCore_init()
-bbFlag bbActions_initFunctions(bbCore* core, bbActions* actions);
+bbFlag bbActions_initFunctions(bbActions* actions);
+
+bbFlag bbActions_request(bbActions* actions, bbNetwork* network, bbAction* action);
 
 I32 bbAction_comparator(
     void* object_A,

@@ -121,3 +121,34 @@ bbFlag bbCS_setString(bbCore* core, char* string, bbInstruction_source source, b
     bbNotImplemented()
 
 }
+
+
+bbFlag bbA_setString_fn(bbCore* core, bbAction* action) {
+    bbDebug("set string = %s\n", action->data.string);
+    return bbSuccess;
+}
+
+
+bbFlag bbAction_setString(void* Core,
+                            char* string,
+                            U32 sender,
+                            U32 collision,
+                            bbTime created_tick,
+                            bbTime act_tick) {
+
+    bbCore* core = Core;
+    bbAction action;
+    action.header.sender = sender;
+    action.header.collision = collision;
+    action.header.created_tick = created_tick;
+    action.header.act_tick = act_tick;
+    action.header.status = bbAction_Local;
+    action.header.type = bbActionType_setString;
+    bbStr_setStr(action.data.string, string, 128);
+
+
+    bbActions_request(core->actions, NULL, &action);
+
+    return bbSuccess;
+
+}

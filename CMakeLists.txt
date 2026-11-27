@@ -57,6 +57,7 @@ target_compile_definitions(bbEngine PRIVATE
 add_library(Test_Game STATIC
         games/test_game/code/set_string.c
         games/test_game/core/instructions.c
+        games/test_game/actions/actions.c
 
 )
 

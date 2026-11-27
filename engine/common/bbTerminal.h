@@ -74,8 +74,8 @@ __FILE_NAME__, __func__, __LINE__, thread, test_time);
 #define bbHere()\
 do {\
 if(!debug_off){\
-fprintf (stdout, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s\n"\
-"BB_HERE\n", __FILE_NAME__, __func__, __LINE__, thread);\
+fprintf (stdout, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s, TIME: %lu\n"\
+"BB_HERE\n", __FILE_NAME__, __func__, __LINE__, thread, test_time);\
 fflush(stdout);\
 }\
 } while(0)
@@ -83,8 +83,8 @@ fflush(stdout);\
 #define bbDebug(...)\
 do {\
 if(!debug_off){\
-fprintf (stdout, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s\n"\
-"DEBUG: ", __FILE_NAME__, __func__, __LINE__, thread);\
+fprintf (stdout, "In FILE: %s, FUNCTION: %s, LINE: %d, THREAD: %s, TIME: %lu\n"\
+"DEBUG: ", __FILE_NAME__, __func__, __LINE__, thread, test_time);\
 fprintf(stdout, __VA_ARGS__);\
 fflush(stdout);\
 }\

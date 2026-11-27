@@ -5,8 +5,14 @@
 #include "engine/core/bbCore.h"
 extern char test_set_string[128];
 
-//bbFlag bbAction_setString(...)
-bbFlag bbAction_setString_fn(bbCore* core, bbAction* action);
+bbFlag bbAction_setString(void* Core,
+                            char* string,
+                            U32 sender,
+                            U32 collision,
+                            bbTime created_tick,
+                            bbTime act_tick);
+
+bbFlag bbA_setString_fn(bbCore* core, bbAction* action);
 bbFlag bbI_setString_fn(bbCore* core, bbInstruction* instruction);
 bbFlag bbI_unsetString_fn(bbCore* core, bbInstruction* instruction);
 bbFlag bbCI_setString(bbCore* core, char* string, bbInstruction_source source, bbHandle action);
