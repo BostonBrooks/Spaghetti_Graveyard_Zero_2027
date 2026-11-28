@@ -14,7 +14,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_C_EXTENSIONS OFF)
 
 #enable link time optimisation
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+#set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 
 # Engine library
@@ -33,6 +33,7 @@ add_library(bbEngine STATIC
         engine/actions/bbAction.c
         engine/profiling/bbProfiling.c
         engine/storage/threadsafe_deque/bbThreadedDeque.c
+        engine/storage/tree/bbTree.c
 
 )
 
@@ -344,5 +345,26 @@ target_compile_options(Test_ThreadedMacros PRIVATE
         -O3
 )
 target_link_options(Test_ThreadedMacros PRIVATE
+        #-fsanitize=address,undefined
+)
+
+
+add_executable(Test_Tree
+        games/test_game/maps/stand_alone_tests/Test_Tree.c
+)
+target_compile_definitions(Test_Tree PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+target_link_libraries(Test_Tree PRIVATE
+        bbEngine
+        Test_Game
+)
+target_compile_options(Test_Tree PRIVATE
+        #-fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+        -g
+)
+target_link_options(Test_Tree PRIVATE
         #-fsanitize=address,undefined
 )

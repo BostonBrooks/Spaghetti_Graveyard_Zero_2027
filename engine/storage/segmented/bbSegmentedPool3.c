@@ -182,6 +182,8 @@ bbFlag bbSegmentedPool_new(
     U32 segment_shift = 0;
     U32 n = elements_per_segment;
 
+    //bbDebug("elements per segment = %u\n", elements_per_segment);
+
     while (n > 1) {
         n >>= 1;
         segment_shift++;
@@ -201,10 +203,11 @@ bbFlag bbSegmentedPool_new(
     pool->segment_capacity = 0;
     pool->init_fn = init_fn;
     pool->init_cl = init_cl;
+
+    pool->segment_mask = elements_per_segment - 1;
     pool->metadata_offset =
         element_stride - sizeof(bbSegmentedPool_metaData);
     *out_pool = pool;
-    pool->segment_mask = elements_per_segment - 1;
     return bbSuccess;
 }
 

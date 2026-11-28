@@ -1,56 +1,41 @@
-/** @file bbSegmentedPool_internal.h
-* @brief Internal definitions for the segmented pool allocator.
-*
-* This file contains the definitions used in bbSegmentedPool.c
-* These should be left as opaque types except for debugging.
-* @warning Do not include this header in ordinary engine code.
-*
-*/
-
-
-#ifndef BB_SEGMENTED_POOL_INTERNAL_H
-#define BB_SEGMENTED_POOL_INTERNAL_H
-
-#include "engine/storage/segmented/bbSegmentedPool.h"
-
 #define BB_POOL_IN_USE UINT32_MAX
 #define BB_POOL_END_OF_LIST (UINT32_MAX-1)
 #define BB_POOL_NULL_GENERATION 0
 #define BB_POOL_INITIAL_GENERATION 1
+#include "engine/common/bbFlag.h"
+#include "engine/common/bbHandle.h"
+#include "engine/storage/segmented/bbSegmentedPool.h"
 
-/**
- * @ todo Possible refinement to reduce memory use when using large,
- *        chache line friendly alignment
- *
-** Possible slot layout:
- * [alignment boundary | object data | padding | metadata]
- *
- */
-typedef struct
-{
-    bbHandle self;
-    U32 next_free;
-    U8 data[];
-} bbSegmentedPool_header;
+typedef bbFlag bbSegmentedPool_initFn(
+    struct bbSegmentedPool* pool,
+    void* object,
+    void* cl);
+
 
 
 typedef struct {
-    U32 first_free;
-    U32 free_count;
+    bbHandle self;
+    U32 next_free;
+} bbSegmentedPool_metaData;
 
-    U32 next_available;
-    U32 prev_available;
+//Header for storing metadata at the beginning of each segment
+typedef struct {
+    U32 first_free; //first free slot
+    U32 free_count; //number of free slots
 
-    U8 data[];
+    U32 next_available; //next available segment
+    U32 prev_available; //prev available segment
 } bbSegmentedPool_segment;
 
-
-struct bbSegmentedPool{
+typedef struct bbSegmentedPool{
     bbSegmentedPool_segment** segments;
-    size_t element_size;
-    size_t element_stride;
-    size_t segment_size;
     size_t alignment;
+    size_t element_stride;
+    size_t data_offset;
+    size_t segment_size;
+    size_t metadata_offset;
+    U32 segment_shift;
+    U32 segment_mask;
     U32 first_available_segment;
     U32 elements_per_segment;
     U32 segment_count;
@@ -58,7 +43,4 @@ struct bbSegmentedPool{
     U16 system;
     bbSegmentedPool_initFn* init_fn;
     void* init_cl;
-};
-
-
-#endif //BB_SEGMENTED_POOL_INTERNAL_H
+} bbSegmentedPool;

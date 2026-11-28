@@ -91,6 +91,8 @@ static void test_popL(void) {
         test_init_list_fn,
         NULL);
 
+    bbDebug("elements_per_segment %u\n", pool->elements_per_segment);
+
     bbAssert(flag == bbSuccess && pool != NULL, "Pool creation failed\n");
 
     bbSegmentedList_init(&list,
@@ -114,7 +116,8 @@ static void test_popL(void) {
         flag = bbSegmentedList_popL(&list,(void**)&test_object);
         bbAssert(flag == bbSuccess, "popL failed\n");
         bbAssert(test_object->integer == i, "Incorrect test_struct data\n");
-        bbSegmentedPool_freeObject(pool,test_object);
+        flag = bbSegmentedPool_freeObject(pool,test_object);
+        bbAssert(flag == bbSuccess, "Free object failes\n");
 
     }
 
@@ -130,7 +133,8 @@ static void test_popL(void) {
         flag = bbSegmentedList_popL(&list,(void**)&test_object);
         bbAssert(flag == bbSuccess, "popL failed\n");
         bbAssert(test_object->integer == i, "Incorrect test_struct data\n");
-        bbSegmentedPool_freeObject(pool,test_object);
+        flag = bbSegmentedPool_freeObject(pool,test_object);
+        bbAssert(flag == bbSuccess, "Free object failes\n");
 
     }
 
@@ -140,8 +144,9 @@ static void test_popL(void) {
     bbAssert(isNULL(list.list_pointer->tail),
              "List tail should be null\n");
 
+    bbDebug("elements_per_segment %u\n", pool->elements_per_segment);
     bbAssert(pool->segment_count == 25,
-         "Unexpected segment count\n");
+         "Unexpected segment count %u\n",pool->segment_count);
 
     for (U32 i = 0; i < pool->segment_count; i++) {
         bbAssert(pool->segments[i]->free_count == 4,

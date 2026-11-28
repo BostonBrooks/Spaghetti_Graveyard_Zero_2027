@@ -17,6 +17,10 @@ typedef enum {
     bbDoubleFree, // Freeing object not in use
     bbNotAllocated,
     bbMallocFailed,
+    bbContinue,
+    bbBreak,
+    bbSkipChildren,
+    bbRepeat
 
 } bbFlag;
 

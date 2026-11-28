@@ -6,19 +6,19 @@
 #include "engine/common/bbHandle.h"
 #include "engine/common/bbFlag.h"
 #include "engine/storage/segmented/bbSegmentedPool.h"
-
+U32 next_list_id(void);
 
 typedef struct {
     bbHandle head;
     bbHandle tail;
-    I32 list_id;
+    U32 list_id;
 } bbList_header;
 
 
 typedef struct {
     bbHandle prev;
     bbHandle next;
-    I32 list_id;
+    U32 list_id;
 } bbList_element;
 
 typedef struct {
@@ -48,6 +48,10 @@ bbFlag bbSegmentedList_peekL(bbSegmentedList* list, void** element);
 bbFlag bbSegmentedList_peekR(bbSegmentedList* list, void** element);
 
 
+bbFlag bbSegmentedListHeader_pushR(bbSegmentedList* list, bbList_header* header, void* element);
+bbFlag bbSegmentedListHeader_peekL(bbSegmentedList* list, bbList_header* header, void** element);
+
+
 bbFlag bbSegmentedList_remove(bbSegmentedList* list, void* element);
 
 bbFlag bbSegmentedList_insertAfter(
@@ -69,5 +73,11 @@ bbFlag bbSegmentedList_getPrev(
     bbSegmentedList* list,
     void* this_element,
     void** prev_element);
+
+bbFlag bbSegmentedListHeader_getNext(
+    bbSegmentedList* list,
+    bbList_header* header,
+    void* this_element,
+    void** next_element);
 
 #endif //BB_SEGMENTED_LIST_H

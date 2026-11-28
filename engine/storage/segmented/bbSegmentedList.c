@@ -7,6 +7,14 @@
 
 #define isNULL(A) ((A).system.generation == BB_POOL_NULL_GENERATION)
 
+static U32 list_id_counter = 1;
+
+U32 next_list_id(void) {
+    if (list_id_counter == 0)
+        list_id_counter = 1;
+
+    return list_id_counter++;
+}
 
 bbFlag bbSegmentedList_init(
     bbSegmentedList* list,
@@ -37,7 +45,7 @@ bbFlag bbSegmentedList_init(
     return bbSuccess;
 }
 
-bbFlag bbSegmentedList_pushR(bbSegmentedList* list, void* element) {
+bbFlag bbSegmentedListHeader_pushR(bbSegmentedList* list,bbList_header* header, void* element) {
     bbAssert(list != NULL, "Null list pointer\n");
     bbAssert(element != NULL, "Null element\n");
 
@@ -52,7 +60,6 @@ bbFlag bbSegmentedList_pushR(bbSegmentedList* list, void* element) {
         list->pool,element,&handle);
     if (flag != bbSuccess) return flag;
 
-    bbList_header* header = list->list_pointer;
 
 
     if(isNULL( header->head)){
@@ -88,6 +95,9 @@ bbFlag bbSegmentedList_pushR(bbSegmentedList* list, void* element) {
 }
 
 
+bbFlag bbSegmentedList_pushR(bbSegmentedList* list, void* element) {
+    return bbSegmentedListHeader_pushR(list, list->list_pointer,element);
+}
 bbFlag bbSegmentedList_pushL(bbSegmentedList* list, void* element) {
     bbAssert(list != NULL, "Null list pointer\n");
     bbAssert(element != NULL, "Null element\n");
@@ -257,6 +267,13 @@ bbFlag bbSegmentedList_popR(bbSegmentedList* list, void** element) {
 
     return bbSuccess;
 }
+bbFlag bbSegmentedListHeader_peekL(bbSegmentedList* list, bbList_header* header, void** element) {
+    bbHandle handle = header->head;
+    bbFlag flag = bbSegmentedPool_lookup(list->pool, handle, element);
+    if (flag == bbNull) return bbEmpty;
+    return flag;
+}
+
 
 
 
@@ -470,6 +487,49 @@ bbFlag bbSegmentedList_getNext(
 
     return  bbSuccess;
 
+
+}
+
+
+bbFlag bbSegmentedListHeader_getNext(
+    bbSegmentedList* list,
+    bbList_header* header,
+    void* this_element,
+    void** next_element) {
+
+    if (next_element == NULL) {return bbNull;}
+    *next_element = NULL;
+    bbList_element* this_link = (bbList_element*)((U8*)this_element+list->offset_of);
+
+    if (this_link->list_id != header->list_id)
+    {
+        bbWarning(false, "Performing a list operation on a member not in the list\n");
+        return bbFail;
+    }
+
+    bbHandle this_handle;
+    bbFlag flag = bbSegmentedPool_reverseLookup(list->pool, this_element, &this_handle);
+    if (flag != bbSuccess)
+    {
+        return flag;
+    }
+
+    if (bbHandle_equal(this_handle, header->tail))
+    {
+        return bbEmpty;
+    }
+
+
+    bbHandle next_handle = this_link->next;
+    void* next_object;
+    flag = bbSegmentedPool_lookup(list->pool, next_handle, &next_object);
+    if (flag != bbSuccess)
+    {
+        return flag;
+    }
+    *next_element = next_object;
+
+    return  bbSuccess;
 
 }
 
