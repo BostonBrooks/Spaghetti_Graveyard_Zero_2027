@@ -19,8 +19,13 @@ typedef struct bbTreeNode {
     bbList_header children;
 } bbTreeNode;
 
+typedef struct bbTreeVisibility {
+    bool visit_element;
+    bool visit_children;
+} bbTreeVisibility;
 
 typedef bbFlag bbTreeFunction(bbTree* tree, void* element, void* cl);
+typedef bbFlag bbTreeVisibilityFunction(bbTree* tree, void* element, void* cl);
 
 bbFlag bbTree_init(bbTree* tree,
     bbSegmentedPool* pool,
@@ -35,7 +40,15 @@ bbFlag bbTreeNode_setParent(bbTree* tree,
     void* element,
     void* parent);
 
-///recursively search through nodes until myFunc(node, cl); returns f_Break
+///recursively search through nodes, filtering nodes with visibility_func
+bbFlag bbTree_preOrderMapVisible(bbTree* tree,
+                            void* element,
+                            bbTreeFunction* my_func,
+                            void* my_func_cl,
+                            bbTreeVisibilityFunction* visibility_func,
+                            void* visibility_func_cl);
+
+///call bbTree_preOrderMapVisible with visibility_func = NULL
 bbFlag bbTree_preOrderMap(bbTree* tree,
                             void* element,
                             bbTreeFunction* my_func,
