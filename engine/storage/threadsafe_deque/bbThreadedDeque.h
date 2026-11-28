@@ -13,7 +13,7 @@ typedef struct
 
 DECLARE_DEQUE_HEADER(bbThreaded,bbDummyMessage,1024)
 
-typedef struct bbThreadsafeDeque {
+typedef struct bbThreadedDeque {
     bbThreaded_deque deque;
 
     pthread_mutex_t mutex;

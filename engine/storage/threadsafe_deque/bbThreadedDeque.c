@@ -3,16 +3,11 @@
 
 #include <stdlib.h>
 
+#include "engine/common/bbMutex.h"
 #include "engine/common/bbTerminal.h"
 
 
 DECLARE_DEQUE_SOURCE(bbThreaded,bbDummyMessage,1024)
-
-#define bbMutexLock(mutex){\
-pthread_mutex_lock(mutex);}\
-
-#define bbMutexUnlock(mutex){\
-pthread_mutex_unlock(mutex);}\
 
 bbFlag bbThreadedDeque_init(bbThreadedDeque* deque) {
     bbFlag flag = bbThreaded_dequeInit(&deque->deque);
@@ -28,6 +23,11 @@ bbFlag bbThreadedDeque_init(bbThreadedDeque* deque) {
     return bbSuccess;
 }
 
+
+bbFlag bbThreadedDeque_destroy(bbThreadedDeque* deque) {
+    bbNotImplemented()
+    return bbSuccess;
+}
 
 bbFlag bbThreadedDeque_pushFront(
     bbThreadedDeque* deque, bbDummyMessage* element)

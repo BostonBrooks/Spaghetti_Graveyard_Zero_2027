@@ -32,6 +32,7 @@ add_library(bbEngine STATIC
         engine/actions/bbAction_instructions.c
         engine/actions/bbAction.c
         engine/profiling/bbProfiling.c
+        engine/storage/threadsafe_deque/bbThreadedDeque.c
 
 )
 
@@ -297,6 +298,31 @@ target_link_libraries(Stress_Test_Actions PRIVATE
 )
 
 target_compile_options(Stress_Test_Actions PRIVATE
+        #-fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+
+)
+
+target_link_options(Stress_Test_Actions PRIVATE
+        #-fsanitize=address,undefined
+)
+
+
+add_executable(Test_ThreadedDeque
+        games/test_game/maps/stand_alone_tests/Test_TreadedDeque.c
+)
+
+target_compile_definitions(Test_ThreadedDeque PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+
+target_link_libraries(Test_ThreadedDeque PRIVATE
+        bbEngine
+        Test_Game
+)
+
+target_compile_options(Test_ThreadedDeque PRIVATE
         #-fsanitize=address,undefined
         -fno-omit-frame-pointer
         -O3
