@@ -310,25 +310,39 @@ target_link_options(Stress_Test_Actions PRIVATE
 
 
 add_executable(Test_ThreadedDeque
-        games/test_game/maps/stand_alone_tests/Test_TreadedDeque.c
+        games/test_game/maps/stand_alone_tests/Test_ThreadedDeque.c
 )
-
 target_compile_definitions(Test_ThreadedDeque PRIVATE
         _POSIX_C_SOURCE=200809L
 )
-
 target_link_libraries(Test_ThreadedDeque PRIVATE
         bbEngine
         Test_Game
 )
-
 target_compile_options(Test_ThreadedDeque PRIVATE
         #-fsanitize=address,undefined
         -fno-omit-frame-pointer
         -O3
-
+)
+target_link_options(Stress_Test_Actions PRIVATE
+        #-fsanitize=address,undefined
 )
 
-target_link_options(Stress_Test_Actions PRIVATE
+add_executable(Test_ThreadedMacros
+        games/test_game/maps/stand_alone_tests/Test_ThreadedDequeMacros.c
+)
+target_compile_definitions(Test_ThreadedMacros PRIVATE
+        _POSIX_C_SOURCE=200809L
+)
+target_link_libraries(Test_ThreadedMacros PRIVATE
+        bbEngine
+        Test_Game
+)
+target_compile_options(Test_ThreadedMacros PRIVATE
+        #-fsanitize=address,undefined
+        -fno-omit-frame-pointer
+        -O3
+)
+target_link_options(Test_ThreadedMacros PRIVATE
         #-fsanitize=address,undefined
 )

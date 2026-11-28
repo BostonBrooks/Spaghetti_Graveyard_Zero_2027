@@ -3,7 +3,7 @@
 #define BB_THREADSAFE_DEQUE_H
 
 #include "engine/storage/deque/bbSegmentedDeque_macros.h"
-
+#include "engine/common/bbMacros.h"
 
 typedef struct
 {
